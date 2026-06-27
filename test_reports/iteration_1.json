@@ -1,0 +1,40 @@
+{
+  "summary": "First-finish smoke test for Team Pillbox MVP. Backend public + admin endpoints respond correctly; all major UI flows (home, staff search/filter, gallery lightbox, announcements, application submit, login good/bad, admin tab switching, application approval, auth protection on /admin) pass. One minor deviation: logout redirects to /login instead of '/'.",
+  "tested_scope": ["frontend", "backend", "auth", "integration"],
+  "passed": [
+    "GET /api/staff returns 6 seeded staff (200)",
+    "GET /api/announcements returns 3 seeded items (200)",
+    "GET /api/gallery returns 6 seeded photos (200)",
+    "POST /api/auth/login with admin creds returns user + sets cookie (200)",
+    "GET /api/auth/me returns admin profile (200)",
+    "GET /api/admin/stats returns counts (200)",
+    "POST /api/applications accepts {full_name, discord_id, age, timezone(alias), desired_role, experience, why_join} -> 200 with status=pending",
+    "Homepage shows hero, Join EMS, Discord button, stats grid (active staff=6)",
+    "Staff page: 6 cards initially; search 'Sam' filters to 1",
+    "Gallery: 6 photos, lightbox opens and closes via testids",
+    "Announcements: 3 items visible",
+    "Login: invalid creds shows [data-testid=login-error] 'Invalid credentials'",
+    "Login: admin creds redirect to /admin",
+    "Admin sidebar tabs switch: staff, applications, gallery, announcements, idcards, certificates, settings",
+    "Applications tab shows submitted application; approve button works",
+    "Visiting /admin while logged out redirects to /login"
+  ],
+  "failed": [
+    {
+      "area": "frontend/auth",
+      "issue": "Logout redirects to /login instead of '/' as specified in the requirements",
+      "evidence": "After clicking [data-testid=logout-button], page.url = https://ems-management.preview.emergentagent.com/login (expected '/')",
+      "priority": "LOW"
+    }
+  ],
+  "observations": [
+    "Admin Dashboard stat-card numeric values appeared blank in the post-login screenshot (only the divider line visible under each label). API /api/admin/stats does return valid counts, so this may be a rendering/CSS issue worth a quick visual check. Not blocking."
+  ],
+  "action_items": [
+    "Optional: update logout handler to navigate to '/' instead of '/login' to match spec.",
+    "Optional: verify Admin Dashboard stat numbers render visibly (color/contrast or binding issue)."
+  ],
+  "success_rate": {"backend": "100%", "frontend": "~94%"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}
