@@ -1,0 +1,104 @@
+{
+  "theme": "light",
+  "archetype": "Swiss & High-Contrast",
+  "domain": "Medical/EMS Roleplay Community",
+  "colors": {
+    "primary": "#E63946",
+    "primary_hover": "#D62828",
+    "secondary": "#1D3557",
+    "accent": "#F4A261",
+    "background": "#F8F9FA",
+    "surface": "#FFFFFF",
+    "text_main": "#0F172A",
+    "text_muted": "#64748B",
+    "border": "#E2E8F0",
+    "error": "#E63946",
+    "success": "#2A9D8F",
+    "navy_dark": "#0F172A"
+  },
+  "typography": {
+    "heading_font": "Clash Display",
+    "body_font": "IBM Plex Sans",
+    "h1": "text-5xl sm:text-6xl font-semibold tracking-tighter leading-none text-navy_dark",
+    "h2": "text-3xl sm:text-4xl font-semibold tracking-tight text-navy_dark",
+    "h3": "text-2xl font-medium tracking-tight text-navy_dark",
+    "body": "text-base font-normal leading-relaxed text-text_main",
+    "label": "text-xs font-bold tracking-[0.2em] uppercase text-text_muted"
+  },
+  "layout": {
+    "spacing_system": "Generous spacing overall, but compact density in data tables. p-6 or p-8 inside bordered containers. py-24 between major sections.",
+    "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "grid_bento": "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+    "borders": "1px solid border-border",
+    "radius": "rounded-sm (sharp, authoritative, clinical look - avoid overly rounded corners)",
+    "shadows": "Minimal. Use shadow-sm for cards. shadow-lg with sharp offset for popovers/modals."
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-white hover:bg-primary_hover transition-colors font-medium rounded-sm px-6 py-3",
+      "secondary": "bg-secondary text-white hover:bg-navy_dark transition-colors font-medium rounded-sm px-6 py-3",
+      "outline": "border border-border text-text_main hover:bg-gray-50 transition-colors font-medium rounded-sm px-6 py-3"
+    },
+    "cards": "bg-surface border border-border p-6 rounded-sm",
+    "inputs": "border border-border rounded-sm px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-surface text-text_main"
+  },
+  "sections": {
+    "hero": {
+      "style": "High impact, serious tone. Split layout or heavy text overlay. Background image of ambulance/hospital with dark navy gradient overlay to ensure text contrast. Use 'Clash Display' for a massive, urgent headline.",
+      "overlay": "bg-gradient-to-r from-navy_dark/90 to-navy_dark/40"
+    },
+    "staff_directory": {
+      "style": "Bento grid or dense list for high information density. ID-card style layout for individuals (Photo on left/top, rank/details clearly separated). Filters using pill-shaped toggles or clean dropdowns."
+    },
+    "gallery": {
+      "style": "Masonry or strict square grid (gap-1 or gap-4). Hover states reveal title/category with a solid dark overlay."
+    },
+    "ems_application": {
+      "style": "Multi-step or clean vertical form. High contrast inputs. Clear validation states."
+    },
+    "id_card_generator": {
+      "style": "Visual canvas area mimicking a physical ID badge. Vertical orientation. Red header (EMS), photo placeholder, QR code at bottom, stark black text on white background."
+    },
+    "certificate_generator": {
+      "style": "Landscape orientation. Formal borders, serif/script accent just for the signature, otherwise clean authoritative sans-serif."
+    },
+    "admin_dashboard": {
+      "style": "Control room density. Sidebar navigation (dark navy), white main content area. High contrast tables for staff and applications. Clear status badges (Approved: Green, Pending: Yellow, Rejected: Red)."
+    }
+  },
+  "motion": {
+    "hover": "Subtle border color change, slight transform (-translate-y-0.5 for cards).",
+    "page_transition": "Fast fade-in. No bouncy animations. Maintain an urgent and professional feel."
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "Sharp, 2px stroke, minimal, highly legible"
+  },
+  "image_urls": [
+    {
+      "category": "hero_background",
+      "url": "https://images.unsplash.com/photo-1619025873875-59dfdd2bbbd6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwzfHxhbWJ1bGFuY2V8ZW58MHx8fHwxNzgyNTMzODA3fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Ambulance driving in city - use with dark overlay"
+    },
+    {
+      "category": "hospital_exterior",
+      "url": "https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Emergency Room sign - high contrast red letters for background blocks or gallery"
+    },
+    {
+      "category": "staff_placeholder",
+      "url": "https://images.pexels.com/photos/6519887/pexels-photo-6519887.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Paramedic standing by ambulance - use for staff profile cards or gallery"
+    },
+    {
+      "category": "gallery_photo_1",
+      "url": "https://images.unsplash.com/photo-1612574935301-af13ccce9258?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwyfHxhbWJ1bGFuY2V8ZW58MHx8fHwxNzgyNTMzODA3fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Ambulance on road"
+    }
+  ],
+  "accessibility": {
+    "contrast": "Ensure all text meets minimum 4.5:1 ratio. No muddy colors. Primary red must be legible against white text.",
+    "testing_attributes": "All interactive elements MUST include data-testid attribute (e.g., data-testid='join-ems-button')."
+  },
+  "instructions_to_main_agent": "Implement a high-contrast, authoritative EMS roleplay website (Team Pillbox). Avoid generic SaaS gradients or AI-slop purple/teal. Use purely React + Tailwind + Shadcn (.js files, no .tsx). Build the Admin dashboard with high data density. Ensure ID cards and Certificates have visually distinct, printable layouts. Apply 'Clash Display' for headings, 'IBM Plex Sans' for body text. All interactive components must have a data-testid attribute."
+}
