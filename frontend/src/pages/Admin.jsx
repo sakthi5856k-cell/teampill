@@ -43,7 +43,7 @@ export default function Admin() {
               data-testid={`admin-tab-${t.k}`}
               onClick={() => setTab(t.k)}
               className={`flex items-center gap-2.5 px-3 py-2.5 text-sm rounded-sm transition-colors ${
-                tab === t.k ? "bg-primary text-white" : "text-white/80 hover:bg-white/10"
+                tab === t.k ? "bg-primary text-white" : "text-white/80 hover:bg-card/10"
               }`}
             >
               <t.icon className="w-4 h-4" /> {t.label}
@@ -73,7 +73,7 @@ function Dashboard() {
 
   return (
     <div data-testid="admin-dashboard">
-      <h2 className="font-display text-4xl text-secondary font-semibold">Dashboard</h2>
+      <h2 className="font-display text-4xl text-foreground font-semibold">Dashboard</h2>
       <p className="text-muted-foreground mt-1">Operational overview.</p>
 
       <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -85,9 +85,9 @@ function Dashboard() {
           ["Announcements", stats?.announcements_count],
           ["Certificates Issued", stats?.certificates_count],
         ].map(([k, v]) => (
-          <div key={k} className="border border-border bg-white p-5 rounded-sm" data-testid={`stat-${k.toLowerCase().replace(/[^a-z]+/g, "-")}`}>
+          <div key={k} className="border border-border bg-card p-5 rounded-sm" data-testid={`stat-${k.toLowerCase().replace(/[^a-z]+/g, "-")}`}>
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">{k}</div>
-            <div className="font-display text-3xl mt-1 text-secondary">{v ?? "—"}</div>
+            <div className="font-display text-3xl mt-1 text-foreground">{v ?? "—"}</div>
           </div>
         ))}
       </div>
@@ -124,10 +124,10 @@ function StaffAdmin() {
 
   return (
     <div data-testid="admin-staff">
-      <h2 className="font-display text-4xl text-secondary font-semibold">Staff</h2>
+      <h2 className="font-display text-4xl text-foreground font-semibold">Staff</h2>
       <p className="text-muted-foreground mt-1">Add, edit and retire team members.</p>
 
-      <form onSubmit={save} className="mt-6 grid sm:grid-cols-2 gap-4 bg-white p-5 border border-border rounded-sm" data-testid="staff-form">
+      <form onSubmit={save} className="mt-6 grid sm:grid-cols-2 gap-4 bg-card p-5 border border-border rounded-sm" data-testid="staff-form">
         <Inp label="Name" v={form.name} on={(v) => setForm({ ...form, name: v })} req testid="staff-form-name" />
         <Sel label="Rank" v={form.rank} on={(v) => setForm({ ...form, rank: v })} opts={RANKS} testid="staff-form-rank" />
         <Inp label="Department" v={form.department} on={(v) => setForm({ ...form, department: v })} testid="staff-form-dept" />
@@ -144,12 +144,12 @@ function StaffAdmin() {
         </div>
       </form>
 
-      <div className="mt-8 border border-border bg-white rounded-sm divide-y divide-border">
+      <div className="mt-8 border border-border bg-card rounded-sm divide-y divide-border">
         {items.map((s) => (
           <div key={s.id} className="p-4 flex items-center gap-4" data-testid={`admin-staff-row-${s.id}`}>
             <img src={s.photo_url || "https://images.unsplash.com/photo-1612531386530-97286d97c2d2?w=200"} className="w-14 h-14 object-cover rounded-sm border border-border" alt="" />
             <div className="flex-1">
-              <div className="font-display text-lg text-secondary">{s.name}</div>
+              <div className="font-display text-lg text-foreground">{s.name}</div>
               <div className="text-xs text-muted-foreground">{s.rank} · {s.department} · {s.employee_id}</div>
             </div>
             <button onClick={() => edit(s)} className="text-sm px-3 py-1.5 border border-border rounded-sm hover:border-primary hover:text-primary" data-testid={`edit-staff-${s.id}`}>Edit</button>
@@ -175,29 +175,34 @@ function ApplicationsAdmin() {
 
   return (
     <div data-testid="admin-applications">
-      <h2 className="font-display text-4xl text-secondary font-semibold">Applications</h2>
+      <h2 className="font-display text-4xl text-foreground font-semibold">Applications</h2>
       <p className="text-muted-foreground mt-1">Review and decide.</p>
 
       <div className="mt-8 grid gap-4">
         {items.length === 0 && <div className="text-muted-foreground" data-testid="apps-empty">No applications yet.</div>}
         {items.map((a) => (
-          <article key={a.id} className="bg-white border border-border rounded-sm p-5" data-testid={`app-row-${a.id}`}>
+          <article key={a.id} className="bg-card border border-border rounded-sm p-5" data-testid={`app-row-${a.id}`}>
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
-                <div className="text-[10px] font-mono tracking-[0.25em] uppercase text-primary">{a.desired_role}</div>
-                <div className="font-display text-xl text-secondary">{a.full_name} · <span className="font-mono text-sm text-muted-foreground">{a.discord_id}</span></div>
-                <div className="text-xs text-muted-foreground">{a.timezone_str || a.timezone} · age {a.age} · {new Date(a.created_at).toLocaleString()}</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono tracking-[0.25em] uppercase text-primary">{a.desired_role}</span>
+                  <span className="font-mono text-[10px] text-accent">{a.ref_number || "—"}</span>
+                </div>
+                <div className="font-display text-xl text-foreground">{a.full_name}{a.in_game_name ? <span className="text-muted-foreground"> · <span className="italic">{a.in_game_name}</span></span> : null}</div>
+                <div className="text-xs text-muted-foreground font-mono">{a.discord_handle || a.discord_id} · {a.discord_user_id ? `UID ${a.discord_user_id}` : "no DM"} · {a.timezone_str || a.timezone} · age {a.age} · {new Date(a.created_at).toLocaleString()}</div>
               </div>
               <StatusPill status={a.status} />
             </div>
             <div className="mt-3 grid md:grid-cols-2 gap-3 text-sm">
-              <div><span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">Experience</span><p>{a.experience}</p></div>
-              <div><span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">Why Join</span><p>{a.why_join}</p></div>
+              <div><span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">Experience</span><p>{a.experience || "—"}</p></div>
+              <div><span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">Why Join</span><p>{a.why_join || "—"}</p></div>
+              {a.availability && <div><span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">Availability</span><p>{a.availability}</p></div>}
+              {a.steam_hex && <div><span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">Steam Hex</span><p className="font-mono">{a.steam_hex}</p></div>}
             </div>
             {a.status === "pending" && (
               <div className="mt-4 flex gap-2">
-                <button onClick={() => decide(a.id, "approved")} data-testid={`approve-${a.id}`} className="inline-flex items-center gap-1.5 bg-[#2A9D8F] text-white px-4 py-2 rounded-sm text-sm"><Check className="w-4 h-4" /> Approve</button>
-                <button onClick={() => decide(a.id, "rejected")} data-testid={`reject-${a.id}`} className="inline-flex items-center gap-1.5 bg-primary text-white px-4 py-2 rounded-sm text-sm"><X className="w-4 h-4" /> Reject</button>
+                <button onClick={() => decide(a.id, "approved")} data-testid={`approve-${a.id}`} className="inline-flex items-center gap-1.5 bg-emerald-500 text-white px-4 py-2 rounded-sm text-sm"><Check className="w-4 h-4" /> Approve</button>
+                <button onClick={() => decide(a.id, "rejected")} data-testid={`reject-${a.id}`} className="inline-flex items-center gap-1.5 bg-red-500 text-white px-4 py-2 rounded-sm text-sm"><X className="w-4 h-4" /> Reject</button>
               </div>
             )}
           </article>
@@ -227,8 +232,8 @@ function GalleryAdmin() {
 
   return (
     <div data-testid="admin-gallery">
-      <h2 className="font-display text-4xl text-secondary font-semibold">Gallery</h2>
-      <form onSubmit={save} className="mt-6 grid sm:grid-cols-2 gap-4 bg-white border border-border p-5 rounded-sm">
+      <h2 className="font-display text-4xl text-foreground font-semibold">Gallery</h2>
+      <form onSubmit={save} className="mt-6 grid sm:grid-cols-2 gap-4 bg-card border border-border p-5 rounded-sm">
         <Inp label="Title" v={form.title} on={(v) => setForm({ ...form, title: v })} req testid="gal-title" />
         <Sel label="Category" v={form.category} on={(v) => setForm({ ...form, category: v })} opts={CATS} testid="gal-cat" />
         <div className="sm:col-span-2"><Inp label="Image URL" v={form.image_url} on={(v) => setForm({ ...form, image_url: v })} req testid="gal-url" /></div>
@@ -236,7 +241,7 @@ function GalleryAdmin() {
       </form>
       <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
         {items.map((g) => (
-          <div key={g.id} className="border border-border rounded-sm overflow-hidden bg-white">
+          <div key={g.id} className="border border-border rounded-sm overflow-hidden bg-card">
             <img src={g.image_url} className="w-full aspect-square object-cover" alt="" />
             <div className="p-2 text-xs flex justify-between items-center">
               <span className="truncate">{g.title}</span>
@@ -265,8 +270,8 @@ function AnnouncementsAdmin() {
 
   return (
     <div data-testid="admin-announcements">
-      <h2 className="font-display text-4xl text-secondary font-semibold">Announcements</h2>
-      <form onSubmit={save} className="mt-6 grid gap-4 bg-white border border-border p-5 rounded-sm">
+      <h2 className="font-display text-4xl text-foreground font-semibold">Announcements</h2>
+      <form onSubmit={save} className="mt-6 grid gap-4 bg-card border border-border p-5 rounded-sm">
         <div className="grid sm:grid-cols-2 gap-4">
           <Inp label="Title" v={form.title} on={(v) => setForm({ ...form, title: v })} req testid="ann-title" />
           <Sel label="Category" v={form.category} on={(v) => setForm({ ...form, category: v })} opts={ANN_CATS} testid="ann-cat" />
@@ -278,12 +283,12 @@ function AnnouncementsAdmin() {
         </label>
         <div><button data-testid="ann-save" className="bg-primary text-white px-5 py-2.5 rounded-sm font-medium"><Plus className="w-4 h-4 inline -mt-0.5" /> Post Announcement</button></div>
       </form>
-      <div className="mt-6 divide-y divide-border bg-white border border-border rounded-sm">
+      <div className="mt-6 divide-y divide-border bg-card border border-border rounded-sm">
         {items.map((a) => (
           <div key={a.id} className="p-4 flex items-start justify-between gap-3">
             <div>
               <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-primary">{a.category}</div>
-              <div className="font-display text-lg text-secondary">{a.title}</div>
+              <div className="font-display text-lg text-foreground">{a.title}</div>
               <div className="text-sm text-muted-foreground line-clamp-2">{a.body}</div>
             </div>
             <button onClick={() => del(a.id)} data-testid={`del-ann-${a.id}`} className="text-primary"><Trash2 className="w-4 h-4" /></button>
@@ -300,14 +305,14 @@ function IDCardAdmin() {
   useEffect(() => { api.get("/staff").then((r) => setItems(r.data)); }, []);
   return (
     <div data-testid="admin-idcards">
-      <h2 className="font-display text-4xl text-secondary font-semibold">ID Card Generator</h2>
+      <h2 className="font-display text-4xl text-foreground font-semibold">ID Card Generator</h2>
       <p className="text-muted-foreground mt-1">Pick a staff member to generate their printable ID card.</p>
       <div className="mt-8 grid sm:grid-cols-2 md:grid-cols-3 gap-4">
         {items.map((s) => (
-          <Link key={s.id} to={`/idcard/${s.id}`} className="lift bg-white border border-border p-4 rounded-sm flex items-center gap-3" data-testid={`idcard-pick-${s.id}`}>
+          <Link key={s.id} to={`/idcard/${s.id}`} className="lift bg-card border border-border p-4 rounded-sm flex items-center gap-3" data-testid={`idcard-pick-${s.id}`}>
             <img src={s.photo_url || "https://images.unsplash.com/photo-1612531386530-97286d97c2d2?w=200"} className="w-14 h-14 object-cover rounded-sm" alt="" />
             <div>
-              <div className="font-display text-lg text-secondary">{s.name}</div>
+              <div className="font-display text-lg text-foreground">{s.name}</div>
               <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">{s.rank} · {s.employee_id}</div>
             </div>
           </Link>
@@ -334,8 +339,8 @@ function CertificatesAdmin() {
 
   return (
     <div data-testid="admin-certs">
-      <h2 className="font-display text-4xl text-secondary font-semibold">Certificate Generator</h2>
-      <form onSubmit={save} className="mt-6 grid sm:grid-cols-2 gap-4 bg-white border border-border p-5 rounded-sm">
+      <h2 className="font-display text-4xl text-foreground font-semibold">Certificate Generator</h2>
+      <form onSubmit={save} className="mt-6 grid sm:grid-cols-2 gap-4 bg-card border border-border p-5 rounded-sm">
         <Inp label="Recipient Name" v={form.recipient_name} on={(v) => setForm({ ...form, recipient_name: v })} req testid="cert-name" />
         <Inp label="Rank" v={form.rank} on={(v) => setForm({ ...form, rank: v })} req testid="cert-rank" />
         <Sel label="Type" v={form.cert_type} on={(v) => setForm({ ...form, cert_type: v })} opts={CERT_TYPES} testid="cert-type" />
@@ -347,11 +352,11 @@ function CertificatesAdmin() {
         </div>
         <div><button data-testid="cert-save" className="bg-primary text-white px-5 py-2.5 rounded-sm font-medium">Generate Certificate</button></div>
       </form>
-      <div className="mt-8 divide-y divide-border bg-white border border-border rounded-sm">
+      <div className="mt-8 divide-y divide-border bg-card border border-border rounded-sm">
         {items.map((c) => (
           <Link to={`/certificate/${c.id}`} target="_blank" key={c.id} className="block p-4 hover:bg-gray-50" data-testid={`cert-row-${c.id}`}>
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-primary">{c.cert_type} · {c.cert_number}</div>
-            <div className="font-display text-lg text-secondary">{c.recipient_name}</div>
+            <div className="font-display text-lg text-foreground">{c.recipient_name}</div>
             <div className="text-xs text-muted-foreground">{c.description}</div>
           </Link>
         ))}
@@ -362,16 +367,20 @@ function CertificatesAdmin() {
 
 // ============== SETTINGS ==============
 function SettingsAdmin() {
-  const [s, setS] = useState({ discord_webhook_url: "", server_status_label: "Server Online", server_status_online: true, discord_invite: "" });
+  const [s, setS] = useState({ discord_webhook_url: "", discord_bot_token: "", discord_admin_channel_id: "",
+    server_status_label: "Server Online", server_status_online: true, discord_invite: "" });
   useEffect(() => { api.get("/admin/settings").then((r) => setS((prev) => ({ ...prev, ...r.data }))); }, []);
   const save = async (e) => { e.preventDefault(); await api.put("/admin/settings", s); toast.success("Settings saved"); };
 
   return (
     <div data-testid="admin-settings">
-      <h2 className="font-display text-4xl text-secondary font-semibold">Settings</h2>
-      <form onSubmit={save} className="mt-6 grid gap-4 bg-white border border-border p-5 rounded-sm max-w-2xl">
-        <Inp label="Discord Webhook URL" v={s.discord_webhook_url || ""} on={(v) => setS({ ...s, discord_webhook_url: v })} testid="settings-webhook" />
-        <Inp label="Discord Invite Link" v={s.discord_invite || ""} on={(v) => setS({ ...s, discord_invite: v })} testid="settings-invite" />
+      <h2 className="font-display text-4xl font-semibold">Settings</h2>
+      <p className="text-muted-foreground mt-1">Configure Discord bot, webhook and server status.</p>
+      <form onSubmit={save} className="mt-6 grid gap-4 bg-card border border-border p-5 rounded-sm max-w-2xl">
+        <Inp label="Discord Bot Token (for DMs to applicants)" v={s.discord_bot_token || ""} on={(v) => setS({ ...s, discord_bot_token: v })} testid="settings-bot-token" />
+        <Inp label="Discord Admin Channel ID (bot posts new apps here)" v={s.discord_admin_channel_id || ""} on={(v) => setS({ ...s, discord_admin_channel_id: v })} testid="settings-channel-id" />
+        <Inp label="Discord Webhook URL (fallback)" v={s.discord_webhook_url || ""} on={(v) => setS({ ...s, discord_webhook_url: v })} testid="settings-webhook" />
+        <Inp label="Discord Invite Link (public)" v={s.discord_invite || ""} on={(v) => setS({ ...s, discord_invite: v })} testid="settings-invite" />
         <Inp label="Server Status Label" v={s.server_status_label || ""} on={(v) => setS({ ...s, server_status_label: v })} testid="settings-status-label" />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" data-testid="settings-online" checked={!!s.server_status_online} onChange={(e) => setS({ ...s, server_status_online: e.target.checked })} />
@@ -397,7 +406,7 @@ function Sel({ label, v, on, opts, testid }) {
   return (
     <label className="block">
       <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-muted-foreground">{label}</span>
-      <select data-testid={testid} value={v} onChange={(e) => on(e.target.value)} className="mt-1.5 w-full border border-border rounded-sm px-3 py-2 text-sm bg-white">
+      <select data-testid={testid} value={v} onChange={(e) => on(e.target.value)} className="mt-1.5 w-full border border-border rounded-sm px-3 py-2 text-sm bg-card">
         {opts.map((o) => <option key={o} value={o}>{o}</option>)}
       </select>
     </label>

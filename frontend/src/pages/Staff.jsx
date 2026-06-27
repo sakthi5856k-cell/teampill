@@ -26,7 +26,7 @@ export default function Staff() {
       <div className="flex items-end justify-between flex-wrap gap-4">
         <div>
           <div className="text-[11px] font-bold tracking-[0.3em] uppercase text-primary">// PERSONNEL</div>
-          <h1 className="font-display text-5xl sm:text-6xl font-semibold mt-2 text-secondary">Staff Directory</h1>
+          <h1 className="font-display text-5xl sm:text-6xl font-semibold mt-2 text-foreground">Staff Directory</h1>
           <p className="text-muted-foreground mt-3 max-w-xl">Every roster member from Executive down to Intern. Searchable, filterable, ready.</p>
         </div>
         <div className="relative w-full sm:w-72" data-testid="staff-search-wrap">
@@ -36,7 +36,7 @@ export default function Staff() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search by name…"
-            className="w-full pl-9 pr-3 py-2.5 border border-border rounded-sm bg-white focus:ring-2 focus:ring-primary outline-none text-sm"
+            className="w-full pl-9 pr-3 py-2.5 border border-border rounded-sm bg-card focus:ring-2 focus:ring-primary outline-none text-sm"
           />
         </div>
       </div>
@@ -48,7 +48,7 @@ export default function Staff() {
             data-testid={`rank-pill-${r.replace(/\s+/g, "-").toLowerCase()}`}
             onClick={() => setRank(r)}
             className={`px-4 py-1.5 text-xs font-mono tracking-[0.18em] uppercase border rounded-sm transition-colors ${
-              rank === r ? "bg-secondary text-white border-secondary" : "bg-white text-secondary border-border hover:border-primary hover:text-primary"
+              rank === r ? "bg-secondary text-white border-secondary" : "bg-card text-foreground border-border hover:border-primary hover:text-primary"
             }`}
           >
             {r}
@@ -63,20 +63,20 @@ export default function Staff() {
           </div>
         )}
         {items.map((s) => (
-          <article key={s.id} data-testid={`staff-card-${s.id}`} className="lift border border-border bg-white rounded-sm overflow-hidden flex">
+          <article key={s.id} data-testid={`staff-card-${s.id}`} className="lift border border-border bg-card rounded-sm overflow-hidden flex">
             <div className="w-32 sm:w-36 shrink-0 bg-secondary/5">
               <img src={s.photo_url || "https://images.unsplash.com/photo-1612531386530-97286d97c2d2?w=400"} alt={s.name} className="w-full h-full object-cover aspect-[3/4]" />
             </div>
             <div className="flex-1 p-5 flex flex-col justify-between">
               <div>
                 <div className="text-[10px] font-mono tracking-[0.25em] uppercase text-primary">{s.rank}</div>
-                <h3 className="font-display text-xl font-semibold text-secondary mt-1 leading-tight">{s.name}</h3>
+                <h3 className="font-display text-xl font-semibold text-foreground mt-1 leading-tight">{s.name}</h3>
                 <p className="text-xs text-muted-foreground mt-1">{s.department}</p>
                 {s.bio && <p className="text-sm mt-3 leading-relaxed line-clamp-3">{s.bio}</p>}
               </div>
               <div className="flex items-center justify-between mt-4 text-[10px] font-mono">
                 <span className="text-muted-foreground">{s.employee_id}</span>
-                <span className="text-secondary">{s.badge_number}</span>
+                <span className="text-foreground">{s.badge_number}</span>
               </div>
             </div>
           </article>

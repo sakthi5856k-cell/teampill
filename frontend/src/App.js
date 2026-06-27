@@ -14,6 +14,7 @@ import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import IDCard from "./pages/IDCard";
 import Certificate from "./pages/Certificate";
+import Status from "./pages/Status";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
                   <Route path="/gallery" element={<Gallery />} />
                   <Route path="/announcements" element={<Announcements />} />
                   <Route path="/apply" element={<Apply />} />
+                  <Route path="/status" element={<Status />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/admin" element={<Admin />} />
                 </Routes>

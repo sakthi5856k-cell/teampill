@@ -21,7 +21,7 @@ export default function Gallery() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16" data-testid="gallery-page">
       <div className="text-[11px] font-bold tracking-[0.3em] uppercase text-primary">// ARCHIVE</div>
-      <h1 className="font-display text-5xl sm:text-6xl font-semibold mt-2 text-secondary">Gallery</h1>
+      <h1 className="font-display text-5xl sm:text-6xl font-semibold mt-2 text-foreground">Gallery</h1>
       <p className="text-muted-foreground mt-3 max-w-xl">Moments from the bay, the field, and the training ground.</p>
 
       <div className="mt-8 flex flex-wrap gap-2" data-testid="gallery-category-filter">
@@ -31,7 +31,7 @@ export default function Gallery() {
             data-testid={`gallery-cat-${c.k}`}
             onClick={() => setCat(c.k)}
             className={`px-4 py-1.5 text-xs font-mono tracking-[0.18em] uppercase border rounded-sm transition-colors ${
-              cat === c.k ? "bg-secondary text-white border-secondary" : "bg-white text-secondary border-border hover:border-primary hover:text-primary"
+              cat === c.k ? "bg-secondary text-white border-secondary" : "bg-card text-foreground border-border hover:border-primary hover:text-primary"
             }`}
           >
             {c.label}

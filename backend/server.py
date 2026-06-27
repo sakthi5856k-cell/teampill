@@ -11,13 +11,12 @@ import bcrypt
 import jwt
 import httpx
 from datetime import datetime, timezone, timedelta
-from typing import List, Optional, Annotated
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response, status
+from typing import List, Optional
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
-# ------------- Setup -------------
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
@@ -41,20 +40,16 @@ def hash_password(pw: str) -> str:
     return bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
 
 def verify_password(pw: str, hashed: str) -> bool:
-    try:
-        return bcrypt.checkpw(pw.encode(), hashed.encode())
-    except Exception:
-        return False
+    try: return bcrypt.checkpw(pw.encode(), hashed.encode())
+    except Exception: return False
 
 def create_access_token(user_id: str, email: str) -> str:
-    payload = {"sub": user_id, "email": email, "type": "access",
-               "exp": datetime.now(timezone.utc) + timedelta(hours=12)}
-    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALG)
+    return jwt.encode({"sub": user_id, "email": email, "type": "access",
+                       "exp": datetime.now(timezone.utc) + timedelta(hours=12)}, JWT_SECRET, algorithm=JWT_ALG)
 
 def create_refresh_token(user_id: str) -> str:
-    payload = {"sub": user_id, "type": "refresh",
-               "exp": datetime.now(timezone.utc) + timedelta(days=7)}
-    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALG)
+    return jwt.encode({"sub": user_id, "type": "refresh",
+                       "exp": datetime.now(timezone.utc) + timedelta(days=7)}, JWT_SECRET, algorithm=JWT_ALG)
 
 def set_auth_cookies(response: Response, access: str, refresh: str):
     response.set_cookie("access_token", access, httponly=True, secure=True, samesite="none", max_age=43200, path="/")
@@ -64,29 +59,81 @@ async def get_current_user(request: Request) -> dict:
     token = request.cookies.get("access_token")
     if not token:
         auth = request.headers.get("Authorization", "")
-        if auth.startswith("Bearer "):
-            token = auth[7:]
-    if not token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+        if auth.startswith("Bearer "): token = auth[7:]
+    if not token: raise HTTPException(401, "Not authenticated")
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALG])
-        if payload.get("type") != "access":
-            raise HTTPException(status_code=401, detail="Invalid token type")
+        if payload.get("type") != "access": raise HTTPException(401, "Invalid token type")
         user = await db.users.find_one({"id": payload["sub"]})
-        if not user:
-            raise HTTPException(status_code=401, detail="User not found")
-        user.pop("_id", None)
-        user.pop("password_hash", None)
+        if not user: raise HTTPException(401, "User not found")
+        user.pop("_id", None); user.pop("password_hash", None)
         return user
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    except jwt.ExpiredSignatureError: raise HTTPException(401, "Token expired")
+    except jwt.InvalidTokenError: raise HTTPException(401, "Invalid token")
 
 async def require_admin(user: dict = Depends(get_current_user)) -> dict:
-    if user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
+    if user.get("role") != "admin": raise HTTPException(403, "Admin only")
     return user
+
+# ------------- Discord helpers -------------
+async def _get_settings() -> dict:
+    return await db.settings.find_one({"id": "global"}) or {}
+
+async def send_discord_dm(user_id: str, content: str = None, embed: dict = None) -> bool:
+    """DM a Discord user using the configured bot token. Returns True on success."""
+    s = await _get_settings()
+    token = (s.get("discord_bot_token") or "").strip()
+    if not token or not user_id: return False
+    try:
+        async with httpx.AsyncClient(timeout=8.0) as cx:
+            r = await cx.post("https://discord.com/api/v10/users/@me/channels",
+                              headers={"Authorization": f"Bot {token}", "Content-Type": "application/json"},
+                              json={"recipient_id": str(user_id)})
+            if r.status_code >= 300:
+                log.warning(f"Create DM failed {r.status_code}: {r.text}")
+                return False
+            channel_id = r.json().get("id")
+            payload = {}
+            if content: payload["content"] = content
+            if embed: payload["embeds"] = [embed]
+            r2 = await cx.post(f"https://discord.com/api/v10/channels/{channel_id}/messages",
+                               headers={"Authorization": f"Bot {token}", "Content-Type": "application/json"},
+                               json=payload)
+            if r2.status_code >= 300:
+                log.warning(f"Send DM failed {r2.status_code}: {r2.text}")
+                return False
+            return True
+    except Exception as e:
+        log.warning(f"discord dm error: {e}"); return False
+
+async def post_admin_channel(content: str = None, embed: dict = None) -> bool:
+    """Post to admin channel via webhook (if configured) OR via bot (if channel id configured)."""
+    s = await _get_settings()
+    payload = {}
+    if content: payload["content"] = content
+    if embed: payload["embeds"] = [embed]
+    webhook = (s.get("discord_webhook_url") or "").strip()
+    if webhook:
+        try:
+            async with httpx.AsyncClient(timeout=6.0) as cx:
+                await cx.post(webhook, json=payload); return True
+        except Exception as e:
+            log.warning(f"webhook failed: {e}")
+    token = (s.get("discord_bot_token") or "").strip()
+    channel = (s.get("discord_admin_channel_id") or "").strip()
+    if token and channel:
+        try:
+            async with httpx.AsyncClient(timeout=6.0) as cx:
+                await cx.post(f"https://discord.com/api/v10/channels/{channel}/messages",
+                              headers={"Authorization": f"Bot {token}", "Content-Type": "application/json"},
+                              json=payload)
+                return True
+        except Exception as e:
+            log.warning(f"bot channel post failed: {e}")
+    return False
+
+def gen_ref(prefix: str = "PB-AP") -> str:
+    return f"{prefix}-{uuid.uuid4().hex[:6].upper()}"
 
 # ------------- Models -------------
 class LoginIn(BaseModel):
@@ -95,7 +142,7 @@ class LoginIn(BaseModel):
 
 class StaffIn(BaseModel):
     name: str
-    rank: str  # Executive Management | HOD | Doctor | Nurse | EMT | Intern
+    rank: str
     department: str = "EMS"
     employee_id: Optional[str] = None
     photo_url: Optional[str] = None
@@ -105,47 +152,45 @@ class StaffIn(BaseModel):
 
 class ApplicationIn(BaseModel):
     full_name: str
-    discord_id: str
+    in_game_name: Optional[str] = None
     age: int
     timezone_str: str = Field(alias="timezone")
-    experience: str
-    why_join: str
-    desired_role: str
+    discord_handle: str
+    discord_user_id: Optional[str] = None
+    steam_hex: Optional[str] = None
+    experience: Optional[str] = ""
+    why_join: Optional[str] = ""
+    availability: Optional[str] = ""
+    desired_role: str = "EMT"
     contact_email: Optional[EmailStr] = None
     model_config = ConfigDict(populate_by_name=True)
 
 class GalleryItemIn(BaseModel):
-    title: str
-    category: str  # hospital | event | training
-    image_url: str
-    description: Optional[str] = None
+    title: str; category: str; image_url: str; description: Optional[str] = None
 
 class AnnouncementIn(BaseModel):
-    title: str
-    body: str
-    category: str = "update"  # update | event | recruitment
+    title: str; body: str; category: str = "update"
 
 class CertificateIn(BaseModel):
-    recipient_name: str
-    rank: str
-    cert_type: str  # training | promotion | appreciation
-    description: str
-    issued_by: str = "Director, Team Pillbox"
-    issue_date: Optional[str] = None
+    recipient_name: str; rank: str; cert_type: str; description: str
+    issued_by: str = "Director, Team Pillbox"; issue_date: Optional[str] = None
 
 class SettingsIn(BaseModel):
     discord_webhook_url: Optional[str] = None
+    discord_bot_token: Optional[str] = None
+    discord_admin_channel_id: Optional[str] = None
+    discord_invite: Optional[str] = None
     server_status_label: Optional[str] = None
     server_status_online: Optional[bool] = None
 
-# ------------- Auth endpoints -------------
+# ------------- Auth -------------
 @api.post("/auth/login")
 async def login(data: LoginIn, response: Response, request: Request):
     ip = request.client.host if request.client else "unknown"
     ident = f"{ip}:{data.email.lower()}"
     rec = await db.login_attempts.find_one({"identifier": ident})
     if rec and rec.get("locked_until") and datetime.fromisoformat(rec["locked_until"]) > datetime.now(timezone.utc):
-        raise HTTPException(status_code=429, detail="Too many attempts. Try again later.")
+        raise HTTPException(429, "Too many attempts. Try again later.")
     user = await db.users.find_one({"email": data.email.lower()})
     if not user or not verify_password(data.password, user["password_hash"]):
         attempts = (rec.get("attempts", 0) if rec else 0) + 1
@@ -153,7 +198,7 @@ async def login(data: LoginIn, response: Response, request: Request):
         if attempts >= 5:
             upd["locked_until"] = (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
         await db.login_attempts.update_one({"identifier": ident}, {"$set": upd}, upsert=True)
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(401, "Invalid credentials")
     await db.login_attempts.delete_one({"identifier": ident})
     access = create_access_token(user["id"], user["email"])
     refresh = create_refresh_token(user["id"])
@@ -174,76 +219,82 @@ async def me(user: dict = Depends(get_current_user)):
 @api.get("/staff")
 async def list_staff(rank: Optional[str] = None, q: Optional[str] = None):
     query = {"active": True}
-    if rank:
-        query["rank"] = rank
-    if q:
-        query["name"] = {"$regex": q, "$options": "i"}
+    if rank: query["rank"] = rank
+    if q: query["name"] = {"$regex": q, "$options": "i"}
     items = await db.staff.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
     return items
 
 @api.get("/staff/{staff_id}")
 async def get_staff(staff_id: str):
     s = await db.staff.find_one({"id": staff_id}, {"_id": 0})
-    if not s:
-        raise HTTPException(404, "Staff not found")
+    if not s: raise HTTPException(404, "Staff not found")
     return s
 
-# Admin: Staff CRUD
 @api.post("/admin/staff")
 async def create_staff(data: StaffIn, _: dict = Depends(require_admin)):
     sid = str(uuid.uuid4())
     eid = data.employee_id or f"TPB-{sid[:6].upper()}"
     doc = {**data.model_dump(), "id": sid, "employee_id": eid, "created_at": utcnow()}
-    await db.staff.insert_one(doc)
-    doc.pop("_id", None)
-    return doc
+    await db.staff.insert_one(doc); doc.pop("_id", None); return doc
 
 @api.put("/admin/staff/{staff_id}")
 async def update_staff(staff_id: str, data: StaffIn, _: dict = Depends(require_admin)):
-    upd = data.model_dump()
-    upd["updated_at"] = utcnow()
+    upd = data.model_dump(); upd["updated_at"] = utcnow()
     res = await db.staff.update_one({"id": staff_id}, {"$set": upd})
-    if not res.matched_count:
-        raise HTTPException(404, "Staff not found")
+    if not res.matched_count: raise HTTPException(404, "Staff not found")
     return await db.staff.find_one({"id": staff_id}, {"_id": 0})
 
 @api.delete("/admin/staff/{staff_id}")
 async def delete_staff(staff_id: str, _: dict = Depends(require_admin)):
-    await db.staff.delete_one({"id": staff_id})
-    return {"ok": True}
+    await db.staff.delete_one({"id": staff_id}); return {"ok": True}
 
-# ------------- Public: Applications -------------
+# ------------- Applications -------------
 @api.post("/applications")
 async def submit_application(data: ApplicationIn):
     aid = str(uuid.uuid4())
+    ref = gen_ref()
     doc = data.model_dump(by_alias=False)
-    doc.update({"id": aid, "status": "pending", "created_at": utcnow()})
+    doc.update({"id": aid, "ref_number": ref, "status": "pending", "created_at": utcnow()})
     await db.applications.insert_one(doc)
-
-    # Discord webhook (best-effort)
-    s = await db.settings.find_one({"id": "global"}) or {}
-    webhook = s.get("discord_webhook_url")
-    if webhook:
-        try:
-            async with httpx.AsyncClient(timeout=5.0) as cx:
-                await cx.post(webhook, json={
-                    "embeds": [{
-                        "title": "New EMS Application",
-                        "description": f"**{data.full_name}** applied for **{data.desired_role}**",
-                        "color": 15094842,
-                        "fields": [
-                            {"name": "Discord ID", "value": data.discord_id, "inline": True},
-                            {"name": "Age", "value": str(data.age), "inline": True},
-                            {"name": "Experience", "value": data.experience[:200], "inline": False},
-                        ],
-                        "timestamp": datetime.now(timezone.utc).isoformat()
-                    }]
-                })
-        except Exception as e:
-            log.warning(f"discord webhook failed: {e}")
-
     doc.pop("_id", None)
+
+    # Post to admin channel (webhook or bot channel)
+    await post_admin_channel(embed={
+        "title": "📥 New EMS Application",
+        "description": f"**{data.full_name}** ({data.in_game_name or '—'}) applied for **{data.desired_role}**\nRef: `{ref}`",
+        "color": 0x1FA7B8,
+        "fields": [
+            {"name": "Discord", "value": data.discord_handle, "inline": True},
+            {"name": "Age", "value": str(data.age), "inline": True},
+            {"name": "Timezone", "value": data.timezone_str, "inline": True},
+            {"name": "Experience", "value": (data.experience or "—")[:300], "inline": False},
+        ],
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
+
+    # DM applicant
+    if data.discord_user_id:
+        await send_discord_dm(data.discord_user_id, embed={
+            "title": "Team Pillbox — Application Received",
+            "description": f"Hey **{data.full_name.split()[0]}**, we got your application.\n\n"
+                           f"**Reference:** `{ref}`\n"
+                           f"**Role:** {data.desired_role}\n\n"
+                           "You'll get another DM the moment Command makes a decision. "
+                           "Check status on the website too.",
+            "color": 0x1FA7B8,
+            "footer": {"text": "Team Pillbox EMS"}
+        })
+
     return doc
+
+@api.get("/applications/lookup/{ref}")
+async def lookup_application(ref: str):
+    """Public status check by ref number."""
+    a = await db.applications.find_one({"ref_number": ref.upper()}, {"_id": 0})
+    if not a: raise HTTPException(404, "No application with that reference")
+    return {"ref_number": a["ref_number"], "status": a["status"], "desired_role": a.get("desired_role"),
+            "full_name": a.get("full_name"), "created_at": a.get("created_at"),
+            "decision_note": a.get("decision_note", ""), "decided_at": a.get("decided_at")}
 
 @api.get("/admin/applications")
 async def list_applications(_: dict = Depends(require_admin)):
@@ -255,52 +306,65 @@ async def decide_application(app_id: str, body: dict, _: dict = Depends(require_
     decision = body.get("decision")
     if decision not in ("approved", "rejected"):
         raise HTTPException(400, "decision must be 'approved' or 'rejected'")
+    note = body.get("note", "")
     res = await db.applications.update_one(
         {"id": app_id},
-        {"$set": {"status": decision, "decision_note": body.get("note", ""), "decided_at": utcnow()}}
+        {"$set": {"status": decision, "decision_note": note, "decided_at": utcnow()}}
     )
-    if not res.matched_count:
-        raise HTTPException(404, "Application not found")
+    if not res.matched_count: raise HTTPException(404, "Application not found")
+    a = await db.applications.find_one({"id": app_id}, {"_id": 0})
+
+    if a.get("discord_user_id"):
+        if decision == "approved":
+            await send_discord_dm(a["discord_user_id"], embed={
+                "title": "✅ Application Approved — Welcome to Team Pillbox",
+                "description": f"Congrats **{a.get('full_name','').split()[0]}**!\n\n"
+                               f"**Ref:** `{a.get('ref_number')}`\n"
+                               f"**Role:** {a.get('desired_role')}\n\n"
+                               + (f"_Note from Command:_ {note}\n\n" if note else "")
+                               + "Join the Discord and hit up Command for onboarding.",
+                "color": 0x2A9D8F
+            })
+        else:
+            await send_discord_dm(a["discord_user_id"], embed={
+                "title": "❌ Application Update",
+                "description": f"Hey **{a.get('full_name','').split()[0]}**, your application "
+                               f"(`{a.get('ref_number')}`) wasn't approved this round.\n\n"
+                               + (f"_Note from Command:_ {note}\n\n" if note else "")
+                               + "Don't sweat it — you can reapply after 14 days.",
+                "color": 0xE63946
+            })
     return {"ok": True, "status": decision}
 
-# ------------- Public: Gallery -------------
+# ------------- Gallery -------------
 @api.get("/gallery")
 async def list_gallery(category: Optional[str] = None):
-    q = {}
-    if category and category != "all":
-        q["category"] = category
+    q = {} if not category or category == "all" else {"category": category}
     items = await db.gallery.find(q, {"_id": 0}).sort("created_at", -1).to_list(500)
     return items
 
 @api.post("/admin/gallery")
 async def add_gallery(data: GalleryItemIn, _: dict = Depends(require_admin)):
     doc = {**data.model_dump(), "id": str(uuid.uuid4()), "created_at": utcnow()}
-    await db.gallery.insert_one(doc)
-    doc.pop("_id", None)
-    return doc
+    await db.gallery.insert_one(doc); doc.pop("_id", None); return doc
 
 @api.delete("/admin/gallery/{item_id}")
 async def delete_gallery(item_id: str, _: dict = Depends(require_admin)):
-    await db.gallery.delete_one({"id": item_id})
-    return {"ok": True}
+    await db.gallery.delete_one({"id": item_id}); return {"ok": True}
 
-# ------------- Public: Announcements -------------
+# ------------- Announcements -------------
 @api.get("/announcements")
 async def list_announcements():
-    items = await db.announcements.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
-    return items
+    return await db.announcements.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
 
 @api.post("/admin/announcements")
 async def add_announcement(data: AnnouncementIn, _: dict = Depends(require_admin)):
     doc = {**data.model_dump(), "id": str(uuid.uuid4()), "created_at": utcnow()}
-    await db.announcements.insert_one(doc)
-    doc.pop("_id", None)
-    return doc
+    await db.announcements.insert_one(doc); doc.pop("_id", None); return doc
 
 @api.delete("/admin/announcements/{a_id}")
 async def delete_announcement(a_id: str, _: dict = Depends(require_admin)):
-    await db.announcements.delete_one({"id": a_id})
-    return {"ok": True}
+    await db.announcements.delete_one({"id": a_id}); return {"ok": True}
 
 # ------------- Certificates -------------
 @api.post("/admin/certificates")
@@ -309,36 +373,32 @@ async def create_certificate(data: CertificateIn, _: dict = Depends(require_admi
     doc = {**data.model_dump(), "id": cid, "cert_number": f"TPB-CERT-{cid[:8].upper()}",
            "issue_date": data.issue_date or datetime.now(timezone.utc).strftime("%B %d, %Y"),
            "created_at": utcnow()}
-    await db.certificates.insert_one(doc)
-    doc.pop("_id", None)
-    return doc
+    await db.certificates.insert_one(doc); doc.pop("_id", None); return doc
 
 @api.get("/admin/certificates")
 async def list_certificates(_: dict = Depends(require_admin)):
-    items = await db.certificates.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
-    return items
+    return await db.certificates.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
 
 @api.get("/certificates/{cert_id}")
 async def get_cert(cert_id: str):
     c = await db.certificates.find_one({"id": cert_id}, {"_id": 0})
-    if not c:
-        raise HTTPException(404, "Not found")
+    if not c: raise HTTPException(404, "Not found")
     return c
 
 # ------------- Settings -------------
 @api.get("/settings")
 async def get_settings_public():
     s = await db.settings.find_one({"id": "global"}, {"_id": 0}) or {
-        "id": "global", "server_status_label": "Server Online",
-        "server_status_online": True, "discord_invite": "https://discord.gg/teampillbox"
+        "id": "global", "server_status_label": "Server Online", "server_status_online": True,
+        "discord_invite": "https://discord.gg/teampillbox"
     }
-    s.pop("discord_webhook_url", None)
+    for k in ("discord_webhook_url", "discord_bot_token", "discord_admin_channel_id"):
+        s.pop(k, None)
     return s
 
 @api.get("/admin/settings")
 async def get_settings_admin(_: dict = Depends(require_admin)):
-    s = await db.settings.find_one({"id": "global"}, {"_id": 0}) or {"id": "global"}
-    return s
+    return await db.settings.find_one({"id": "global"}, {"_id": 0}) or {"id": "global"}
 
 @api.put("/admin/settings")
 async def update_settings(data: SettingsIn, _: dict = Depends(require_admin)):
@@ -347,7 +407,6 @@ async def update_settings(data: SettingsIn, _: dict = Depends(require_admin)):
     await db.settings.update_one({"id": "global"}, {"$set": {"id": "global", **upd}}, upsert=True)
     return await db.settings.find_one({"id": "global"}, {"_id": 0})
 
-# ------------- Dashboard stats -------------
 @api.get("/admin/stats")
 async def admin_stats(_: dict = Depends(require_admin)):
     return {
@@ -360,8 +419,7 @@ async def admin_stats(_: dict = Depends(require_admin)):
     }
 
 @api.get("/")
-async def root():
-    return {"name": "Team Pillbox API", "status": "ok"}
+async def root(): return {"name": "Team Pillbox API", "status": "ok"}
 
 # ------------- Startup -------------
 @app.on_event("startup")
@@ -370,6 +428,7 @@ async def startup():
     await db.users.create_index("id", unique=True)
     await db.staff.create_index("id", unique=True)
     await db.applications.create_index("id", unique=True)
+    await db.applications.create_index("ref_number")
     await db.gallery.create_index("id", unique=True)
     await db.announcements.create_index("id", unique=True)
     await db.certificates.create_index("id", unique=True)
@@ -377,77 +436,24 @@ async def startup():
 
     existing = await db.users.find_one({"email": ADMIN_EMAIL.lower()})
     if not existing:
-        await db.users.insert_one({
-            "id": str(uuid.uuid4()),
-            "email": ADMIN_EMAIL.lower(),
-            "password_hash": hash_password(ADMIN_PASSWORD),
-            "name": "Director",
-            "role": "admin",
-            "created_at": utcnow(),
-        })
+        await db.users.insert_one({"id": str(uuid.uuid4()), "email": ADMIN_EMAIL.lower(),
+                                   "password_hash": hash_password(ADMIN_PASSWORD), "name": "Director",
+                                   "role": "admin", "created_at": utcnow()})
         log.info(f"Seeded admin {ADMIN_EMAIL}")
     elif not verify_password(ADMIN_PASSWORD, existing["password_hash"]):
         await db.users.update_one({"email": ADMIN_EMAIL.lower()},
                                   {"$set": {"password_hash": hash_password(ADMIN_PASSWORD)}})
-        log.info("Admin password updated from env")
 
-    # Seed default settings
     if not await db.settings.find_one({"id": "global"}):
-        await db.settings.insert_one({
-            "id": "global",
-            "discord_webhook_url": "",
-            "discord_invite": "https://discord.gg/teampillbox",
-            "server_status_label": "Server Online",
-            "server_status_online": True,
-            "created_at": utcnow(),
-        })
-
-    # Seed demo content (only if collections empty)
-    if await db.staff.count_documents({}) == 0:
-        demo_staff = [
-            {"name": "Dr. Evelyn Rhodes", "rank": "Executive Management", "department": "EMS", "bio": "Director of EMS Operations. 12 years on the line.", "photo_url": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400"},
-            {"name": "Dr. Marcus Hale", "rank": "HOD", "department": "Trauma", "bio": "Head of Trauma. Cool head, fast hands.", "photo_url": "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400"},
-            {"name": "Dr. Aisha Khan", "rank": "Doctor", "department": "ER", "bio": "ER attending. Loves a good code blue story.", "photo_url": "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400"},
-            {"name": "Nina Caldwell", "rank": "Nurse", "department": "ICU", "bio": "ICU charge nurse. Ten cups of coffee deep.", "photo_url": "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400"},
-            {"name": "Jake Morrison", "rank": "EMT", "department": "Field", "bio": "Lead EMT. First on scene, last to leave.", "photo_url": "https://images.unsplash.com/photo-1612531386530-97286d97c2d2?w=400"},
-            {"name": "Sam Patel", "rank": "Intern", "department": "Rotation", "bio": "Med intern. Bring snacks.", "photo_url": "https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=400"},
-        ]
-        for s in demo_staff:
-            sid = str(uuid.uuid4())
-            await db.staff.insert_one({**s, "id": sid, "active": True, "employee_id": f"TPB-{sid[:6].upper()}", "badge_number": f"#{1000 + len(s['name'])}", "created_at": utcnow()})
-
-    if await db.gallery.count_documents({}) == 0:
-        seeds = [
-            ("Main Hospital Wing", "hospital", "https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"),
-            ("Ambulance Bay", "hospital", "https://images.unsplash.com/photo-1612574935301-af13ccce9258?w=1200"),
-            ("Annual Training Day", "training", "https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=1200"),
-            ("Field Drill", "training", "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=1200"),
-            ("Awards Night 2025", "event", "https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=1200"),
-            ("Community Health Camp", "event", "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=1200"),
-        ]
-        for title, cat, url in seeds:
-            await db.gallery.insert_one({"id": str(uuid.uuid4()), "title": title, "category": cat, "image_url": url, "created_at": utcnow()})
-
-    if await db.announcements.count_documents({}) == 0:
-        seeds = [
-            ("Recruitment Open", "We are accepting new EMS applications through the end of the month. Apply via the EMS Application page.", "recruitment"),
-            ("Quarterly Training Drill", "Mandatory live drill scheduled for Saturday 19:00. Briefing in the bay 30 min prior.", "event"),
-            ("Hospital Renovation Update", "The east wing reopens this Friday with two new trauma bays.", "update"),
-        ]
-        for t, b, c in seeds:
-            await db.announcements.insert_one({"id": str(uuid.uuid4()), "title": t, "body": b, "category": c, "created_at": utcnow()})
+        await db.settings.insert_one({"id": "global", "discord_webhook_url": "", "discord_bot_token": "",
+                                      "discord_admin_channel_id": "",
+                                      "discord_invite": "https://discord.gg/teampillbox",
+                                      "server_status_label": "Server Online", "server_status_online": True,
+                                      "created_at": utcnow()})
 
 @app.on_event("shutdown")
-async def shutdown():
-    client.close()
+async def shutdown(): client.close()
 
-# ------------- Mount -------------
 app.include_router(api)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True,
+                   allow_methods=["*"], allow_headers=["*"])

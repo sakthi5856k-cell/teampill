@@ -1,49 +1,46 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Cross } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-secondary text-white mt-24" data-testid="footer">
+    <footer className="mt-24 border-t border-border bg-background" data-testid="footer">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid md:grid-cols-4 gap-10">
         <div className="md:col-span-2">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-primary flex items-center justify-center rounded-sm">
-              <Cross className="w-5 h-5" strokeWidth={2.5} />
-            </div>
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="logo" className="w-12 h-12 object-contain" />
             <div>
-              <div className="font-display text-xl font-semibold">TEAM PILLBOX</div>
-              <div className="text-[10px] tracking-[0.25em] text-white/60 font-mono">EMERGENCY MEDICAL SERVICES</div>
+              <div className="font-display text-xl font-semibold">EMS CORE RP</div>
+              <div className="text-[10px] tracking-[0.3em] text-primary font-mono">PILL BOX</div>
             </div>
           </div>
-          <p className="mt-4 text-sm text-white/70 max-w-md leading-relaxed">
+          <p className="mt-4 text-sm text-muted-foreground max-w-md leading-relaxed">
             A roleplay EMS organization built on discipline, training, and community.
             We respond. We train. We carry the cross.
           </p>
         </div>
-
         <div>
-          <div className="text-xs font-bold tracking-[0.2em] text-white/60 uppercase mb-3">Navigate</div>
+          <div className="text-[11px] font-bold tracking-[0.25em] text-muted-foreground uppercase mb-3">Navigate</div>
           <ul className="space-y-2 text-sm">
-            <li><Link to="/staff" className="hover:text-primary">Staff Directory</Link></li>
+            <li><Link to="/staff" className="hover:text-primary">Staff</Link></li>
             <li><Link to="/gallery" className="hover:text-primary">Gallery</Link></li>
             <li><Link to="/announcements" className="hover:text-primary">Announcements</Link></li>
-            <li><Link to="/apply" className="hover:text-primary">EMS Application</Link></li>
+            <li><Link to="/apply" className="hover:text-primary">Apply</Link></li>
+            <li><Link to="/status" className="hover:text-primary">Check Status</Link></li>
           </ul>
         </div>
         <div>
-          <div className="text-xs font-bold tracking-[0.2em] text-white/60 uppercase mb-3">Operations</div>
+          <div className="text-[11px] font-bold tracking-[0.25em] text-muted-foreground uppercase mb-3">Ops</div>
           <ul className="space-y-2 text-sm">
             <li><a href="#" className="hover:text-primary">Discord</a></li>
             <li><Link to="/login" className="hover:text-primary">Staff Login</Link></li>
-            <li className="text-white/50">© {new Date().getFullYear()} Team Pillbox</li>
+            <li className="text-muted-foreground">© {new Date().getFullYear()} EMS CORE RP — Pill Box</li>
           </ul>
         </div>
       </div>
-      <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center text-[11px] font-mono text-white/40">
-          <span>UNIT 01 // STATUS: OPERATIONAL</span>
-          <span>v1.0 — BUILT FOR FIRST RESPONDERS</span>
+      <div className="border-t border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between text-[11px] font-mono text-muted-foreground">
+          <span>UNIT 01 // OPERATIONAL</span>
+          <span>v1.1 — BUILT FOR FIRST RESPONDERS</span>
         </div>
       </div>
     </footer>

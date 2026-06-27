@@ -31,14 +31,14 @@ export default function Login() {
           <div className="w-10 h-10 bg-primary text-white flex items-center justify-center rounded-sm">
             <Cross className="w-5 h-5" strokeWidth={2.5} />
           </div>
-          <div className="font-display text-2xl font-semibold text-secondary">TEAM PILLBOX</div>
+          <div className="font-display text-2xl font-semibold text-foreground">TEAM PILLBOX</div>
         </div>
 
-        <div className="bg-white border border-border rounded-sm p-8">
+        <div className="bg-card border border-border rounded-sm p-8">
           <div className="flex items-center gap-2 text-[11px] font-mono tracking-[0.25em] uppercase text-primary">
             <Lock className="w-3 h-3" /> Secure Access
           </div>
-          <h1 className="font-display text-3xl font-semibold mt-2 text-secondary">Staff Login</h1>
+          <h1 className="font-display text-3xl font-semibold mt-2 text-foreground">Staff Login</h1>
           <p className="text-sm text-muted-foreground mt-1">Authorized personnel only.</p>
 
           <form onSubmit={submit} className="mt-6 grid gap-4" data-testid="login-form">

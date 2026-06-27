@@ -26,13 +26,16 @@ export default function Home() {
         <img src={HERO_IMG} alt="ambulance" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 hero-overlay" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 text-white">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 border border-white/20 rounded-sm backdrop-blur-sm" data-testid="hero-badge">
-            <span className={`w-2 h-2 rounded-full ${settings.server_status_online ? "bg-green-400 dot-live" : "bg-red-400"}`}></span>
-            <span className="text-[11px] font-mono tracking-[0.25em] uppercase">{settings.server_status_label}</span>
+          <div className="flex items-center gap-4 mb-6">
+            <img src="/logo.png" alt="EMS Core RP Pill Box" className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-[0_0_20px_rgba(31,167,184,0.4)]" data-testid="hero-logo" />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 border border-white/20 rounded-sm backdrop-blur-sm" data-testid="hero-badge">
+              <span className={`w-2 h-2 rounded-full ${settings.server_status_online ? "bg-green-400 dot-live" : "bg-red-400"}`}></span>
+              <span className="text-[11px] font-mono tracking-[0.25em] uppercase">{settings.server_status_label}</span>
+            </div>
           </div>
 
           <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-semibold mt-6 leading-[0.95] max-w-4xl" data-testid="hero-headline">
-            We carry <span className="text-primary">the cross.</span><br />
+            We carry <span className="gradient-text">the cross.</span><br />
             You carry on <span className="italic font-medium">living.</span>
           </h1>
 
@@ -45,7 +48,7 @@ export default function Home() {
             <Link
               to="/apply"
               data-testid="join-ems-button"
-              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3.5 rounded-sm font-medium hover:bg-[#d62828] transition-colors"
+              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3.5 rounded-sm font-medium hover:bg-primary/85 transition-colors"
             >
               <ShieldPlus className="w-4 h-4" /> Join EMS
               <ArrowRight className="w-4 h-4" />
@@ -104,57 +107,49 @@ export default function Home() {
         <div className="flex items-end justify-between flex-wrap gap-4">
           <div>
             <div className="text-[11px] font-bold tracking-[0.3em] uppercase text-primary">// 01 — STRUCTURE</div>
-            <h2 className="font-display text-4xl sm:text-5xl font-semibold mt-2 text-secondary">The Chain of Command.</h2>
+            <h2 className="font-display text-4xl sm:text-5xl font-semibold mt-2">The Chain of Command.</h2>
           </div>
-          <Link to="/staff" className="text-sm font-medium text-secondary hover:text-primary inline-flex items-center gap-1" data-testid="view-all-staff-link">
+          <Link to="/staff" className="text-sm font-medium text-foreground hover:text-primary inline-flex items-center gap-1" data-testid="view-all-staff-link">
             View full directory <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
         <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { t: "Executive", n: "01" },
-            { t: "HOD", n: "02" },
-            { t: "Doctors", n: "03" },
-            { t: "Nurses", n: "04" },
-            { t: "EMT", n: "05" },
-            { t: "Interns", n: "06" },
+            { t: "Executive", n: "01" }, { t: "HOD", n: "02" }, { t: "Doctors", n: "03" },
+            { t: "Nurses", n: "04" }, { t: "EMT", n: "05" }, { t: "Interns", n: "06" },
           ].map((d) => (
             <Link
               to={`/staff?rank=${encodeURIComponent(d.t === "Executive" ? "Executive Management" : d.t === "Doctors" ? "Doctor" : d.t === "Nurses" ? "Nurse" : d.t)}`}
-              key={d.t}
-              data-testid={`division-card-${d.t.toLowerCase()}`}
-              className="lift border border-border bg-card p-5 rounded-sm flex flex-col gap-6 group"
-            >
+              key={d.t} data-testid={`division-card-${d.t.toLowerCase()}`}
+              className="lift border border-border bg-card p-5 rounded-sm flex flex-col gap-6 group">
               <span className="text-[10px] font-mono text-muted-foreground">UNIT {d.n}</span>
-              <span className="font-display text-2xl text-secondary group-hover:text-primary transition-colors">{d.t}</span>
+              <span className="font-display text-2xl group-hover:text-primary transition-colors">{d.t}</span>
             </Link>
           ))}
         </div>
       </section>
 
       {/* Latest announcements */}
-      <section className="bg-secondary text-white" data-testid="latest-news-section">
+      <section className="border-t border-border bg-card/30" data-testid="latest-news-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="flex items-end justify-between flex-wrap gap-4">
             <div>
               <div className="text-[11px] font-bold tracking-[0.3em] uppercase text-primary">// 02 — DISPATCH BOARD</div>
               <h2 className="font-display text-4xl sm:text-5xl font-semibold mt-2">Latest from the bay.</h2>
             </div>
-            <Link to="/announcements" className="text-sm font-medium text-white hover:text-primary inline-flex items-center gap-1" data-testid="view-all-announcements-link">
+            <Link to="/announcements" className="text-sm font-medium hover:text-primary inline-flex items-center gap-1" data-testid="view-all-announcements-link">
               All announcements <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
           <div className="mt-10 grid md:grid-cols-3 gap-5">
-            {latest.length === 0 && (
-              <div className="text-white/50 col-span-3 text-sm">No announcements yet.</div>
-            )}
+            {latest.length === 0 && <div className="text-muted-foreground col-span-3 text-sm">No announcements yet.</div>}
             {latest.map((a) => (
-              <article key={a.id} data-testid={`home-announcement-${a.id}`} className="border border-white/10 bg-white/5 p-6 rounded-sm hover:border-primary transition-colors">
+              <article key={a.id} data-testid={`home-announcement-${a.id}`} className="border border-border bg-background p-6 rounded-sm hover:border-primary transition-colors">
                 <span className="inline-block text-[10px] font-mono tracking-[0.25em] uppercase text-primary mb-3">{a.category}</span>
                 <h3 className="font-display text-2xl leading-tight">{a.title}</h3>
-                <p className="mt-3 text-sm text-white/70 leading-relaxed line-clamp-4">{a.body}</p>
+                <p className="mt-3 text-sm text-muted-foreground leading-relaxed line-clamp-4">{a.body}</p>
               </article>
             ))}
           </div>
