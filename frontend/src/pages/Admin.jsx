@@ -369,15 +369,35 @@ function CertificatesAdmin() {
 function SettingsAdmin() {
   const [s, setS] = useState({ discord_webhook_url: "", discord_bot_token: "", discord_admin_channel_id: "",
     server_status_label: "Server Online", server_status_online: true, discord_invite: "" });
-  useEffect(() => { api.get("/admin/settings").then((r) => setS((prev) => ({ ...prev, ...r.data }))); }, []);
-  const save = async (e) => { e.preventDefault(); await api.put("/admin/settings", s); toast.success("Settings saved"); };
+  const [bot, setBot] = useState({ online: false, user: null, error: null });
+  const refreshBot = () => api.get("/admin/bot/status").then((r) => setBot(r.data)).catch(() => {});
+  useEffect(() => {
+    api.get("/admin/settings").then((r) => setS((prev) => ({ ...prev, ...r.data })));
+    refreshBot();
+    const t = setInterval(refreshBot, 5000);
+    return () => clearInterval(t);
+  }, []);
+  const save = async (e) => { e.preventDefault(); await api.put("/admin/settings", s); toast.success("Settings saved — bot will reconnect if token changed"); setTimeout(refreshBot, 2500); };
+  const restart = async () => { await api.post("/admin/bot/restart"); toast.success("Restarting bot…"); setTimeout(refreshBot, 2500); };
 
   return (
     <div data-testid="admin-settings">
       <h2 className="font-display text-4xl font-semibold">Settings</h2>
-      <p className="text-muted-foreground mt-1">Configure Discord bot, webhook and server status.</p>
+
+      <div className="mt-6 max-w-2xl border border-border bg-card p-4 rounded-sm flex items-center justify-between" data-testid="bot-status-card">
+        <div>
+          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground">Discord Bot</div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className={`w-2.5 h-2.5 rounded-full ${bot.online ? "bg-emerald-400 dot-live" : "bg-red-400"}`} />
+            <span data-testid="bot-status-text" className="font-display text-lg">{bot.online ? `Online — ${bot.user}` : "Offline"}</span>
+          </div>
+          {bot.error && !bot.online && <div className="text-xs text-red-400 mt-1" data-testid="bot-status-error">{String(bot.error)}</div>}
+        </div>
+        <button onClick={restart} data-testid="bot-restart" className="px-4 py-2 border border-border rounded-sm text-sm hover:border-primary hover:text-primary">Restart Bot</button>
+      </div>
+
       <form onSubmit={save} className="mt-6 grid gap-4 bg-card border border-border p-5 rounded-sm max-w-2xl">
-        <Inp label="Discord Bot Token (for DMs to applicants)" v={s.discord_bot_token || ""} on={(v) => setS({ ...s, discord_bot_token: v })} testid="settings-bot-token" />
+        <Inp label="Discord Bot Token (for DMs to applicants + online presence)" v={s.discord_bot_token || ""} on={(v) => setS({ ...s, discord_bot_token: v })} testid="settings-bot-token" />
         <Inp label="Discord Admin Channel ID (bot posts new apps here)" v={s.discord_admin_channel_id || ""} on={(v) => setS({ ...s, discord_admin_channel_id: v })} testid="settings-channel-id" />
         <Inp label="Discord Webhook URL (fallback)" v={s.discord_webhook_url || ""} on={(v) => setS({ ...s, discord_webhook_url: v })} testid="settings-webhook" />
         <Inp label="Discord Invite Link (public)" v={s.discord_invite || ""} on={(v) => setS({ ...s, discord_invite: v })} testid="settings-invite" />

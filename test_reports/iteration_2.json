@@ -1,0 +1,21 @@
+{
+  "summary": "Verified Discord bot integration end-to-end. Backend bot/status endpoint returns online=true with user 'SAKTHI GAMER#8398'. Auth gating, restart endpoint, settings PUT, staff/gallery/announcements endpoints all working. Frontend Admin > Settings shows bot-status-card with green dot, bot-status-text 'Online — SAKTHI GAMER#8398', and bot-restart button.",
+  "tested_scope": ["backend", "frontend", "auth", "integration"],
+  "passed": [
+    "GET /api/admin/bot/status unauthenticated -> 401 {detail:'Not authenticated'}",
+    "POST /api/auth/login admin -> 200 with admin role",
+    "GET /api/admin/bot/status authed -> 200 {online:true, user:'SAKTHI GAMER#8398', error:null}",
+    "POST /api/admin/bot/restart authed -> 200 {ok:true, message:'Bot restarting'}",
+    "GET /api/admin/settings -> 200",
+    "PUT /api/admin/settings same payload -> 200, settings preserved",
+    "GET /api/staff, /api/gallery, /api/announcements -> 200",
+    "POST /api/applications endpoint reachable (422 only due to test payload field naming, not a bug)",
+    "Frontend admin login + Settings tab navigation works",
+    "bot-status-card, bot-status-text ('Online — SAKTHI GAMER#8398'), bot-restart all present and rendered correctly with green status dot"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true
+}

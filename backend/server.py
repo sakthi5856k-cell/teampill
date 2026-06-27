@@ -7,9 +7,11 @@ load_dotenv(ROOT_DIR / '.env')
 import os
 import logging
 import uuid
+import asyncio
 import bcrypt
 import jwt
 import httpx
+import discord
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response
@@ -31,6 +33,56 @@ api = APIRouter(prefix="/api")
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(name)s %(levelname)s %(message)s')
 log = logging.getLogger("pillbox")
+
+# ------------- Discord bot (gateway connection so the bot shows ONLINE) -------------
+discord_bot = None
+discord_bot_task = None
+discord_bot_status: dict = {"online": False, "user": None, "error": None}
+
+async def _stop_discord_bot():
+    global discord_bot, discord_bot_task
+    if discord_bot is not None:
+        try: await discord_bot.close()
+        except Exception: pass
+    if discord_bot_task is not None:
+        try: discord_bot_task.cancel()
+        except Exception: pass
+    discord_bot = None
+    discord_bot_task = None
+    discord_bot_status.update({"online": False, "user": None})
+
+async def _start_discord_bot(token: str):
+    """Launch a Discord gateway client so the bot appears Online."""
+    global discord_bot, discord_bot_task
+    await _stop_discord_bot()
+    token = (token or "").strip()
+    if not token:
+        discord_bot_status.update({"online": False, "user": None, "error": "no token"})
+        return
+    intents = discord.Intents.default()
+    client = discord.Client(intents=intents)
+
+    @client.event
+    async def on_ready():
+        discord_bot_status.update({"online": True, "user": str(client.user), "error": None})
+        try:
+            await client.change_presence(activity=discord.Game(name="Team Pillbox EMS"), status=discord.Status.online)
+        except Exception: pass
+        log.info(f"Discord bot ONLINE as {client.user}")
+
+    async def _runner():
+        try:
+            await client.start(token)
+        except discord.LoginFailure as e:
+            discord_bot_status.update({"online": False, "error": f"login failure: {e}"})
+            log.warning(f"Discord login failure: {e}")
+        except Exception as e:
+            discord_bot_status.update({"online": False, "error": str(e)})
+            log.warning(f"Discord bot crashed: {e}")
+
+    discord_bot = client
+    discord_bot_task = asyncio.create_task(_runner())
+
 
 # ------------- Helpers -------------
 def utcnow():
@@ -404,8 +456,22 @@ async def get_settings_admin(_: dict = Depends(require_admin)):
 async def update_settings(data: SettingsIn, _: dict = Depends(require_admin)):
     upd = {k: v for k, v in data.model_dump().items() if v is not None}
     upd["updated_at"] = utcnow()
+    prev = await db.settings.find_one({"id": "global"}) or {}
     await db.settings.update_one({"id": "global"}, {"$set": {"id": "global", **upd}}, upsert=True)
-    return await db.settings.find_one({"id": "global"}, {"_id": 0})
+    new_doc = await db.settings.find_one({"id": "global"}, {"_id": 0})
+    if "discord_bot_token" in upd and upd.get("discord_bot_token") != prev.get("discord_bot_token"):
+        asyncio.create_task(_start_discord_bot(upd.get("discord_bot_token", "")))
+    return new_doc
+
+@api.get("/admin/bot/status")
+async def bot_status(_: dict = Depends(require_admin)):
+    return discord_bot_status
+
+@api.post("/admin/bot/restart")
+async def bot_restart(_: dict = Depends(require_admin)):
+    s = await _get_settings()
+    asyncio.create_task(_start_discord_bot(s.get("discord_bot_token", "")))
+    return {"ok": True, "message": "Bot restarting"}
 
 @api.get("/admin/stats")
 async def admin_stats(_: dict = Depends(require_admin)):
@@ -451,8 +517,15 @@ async def startup():
                                       "server_status_label": "Server Online", "server_status_online": True,
                                       "created_at": utcnow()})
 
+    # Auto-start Discord gateway bot if token configured
+    s = await db.settings.find_one({"id": "global"}) or {}
+    if (s.get("discord_bot_token") or "").strip():
+        asyncio.create_task(_start_discord_bot(s["discord_bot_token"]))
+
 @app.on_event("shutdown")
-async def shutdown(): client.close()
+async def shutdown():
+    await _stop_discord_bot()
+    client.close()
 
 app.include_router(api)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True,
