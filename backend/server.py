@@ -145,11 +145,11 @@ async def _start_discord_bot(token: str):
 
     @client.event
     async def on_interaction(interaction: discord.Interaction):
+        # Only handle component interactions here; slash commands are auto-dispatched by the tree.
         if interaction.type != discord.InteractionType.component: return
         data = interaction.data or {}
         cid = data.get("custom_id", "")
         if not (cid.startswith("app_approve:") or cid.startswith("app_reject:")): return
-        # Defer IMMEDIATELY (3s Discord deadline) — heavy work follows
         try: await interaction.response.defer()
         except Exception: pass
         action, app_id = cid.split(":", 1)
@@ -189,6 +189,19 @@ async def _start_discord_bot(token: str):
             log.warning(f"button handler error: {e}")
             try: await interaction.followup.send(f"Error: `{e}`", ephemeral=True)
             except Exception: pass
+
+    # CRITICAL: re-dispatch other interaction types to the command tree, since
+    # overriding on_interaction replaces discord.py's default dispatcher.
+    _orig_on_interaction = on_interaction
+    @client.event
+    async def on_interaction(interaction: discord.Interaction):  # noqa: F811
+        if interaction.type == discord.InteractionType.component:
+            return await _orig_on_interaction(interaction)
+        # For application_command and other types, let the tree dispatch
+        try:
+            client._connection._command_tree = tree  # ensure attached
+        except Exception: pass
+        await tree._from_interaction(interaction)
 
     async def _runner():
         try:

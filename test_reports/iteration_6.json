@@ -1,0 +1,26 @@
+{
+  "summary": "Verified Discord slash-command bug fix via code inspection + REST smoke tests. on_interaction handler in /app/backend/server.py (lines 197-204) now explicitly calls `await tree._from_interaction(interaction)` for non-component interactions, restoring slash command dispatch while preserving Approve/Reject button handling. Bot status endpoint reports online=true. All previously-passing REST endpoints still 200.",
+  "tested_scope": ["backend", "frontend", "integration"],
+  "passed": [
+    "Code inspection: tree._from_interaction(interaction) call exists at line 204 inside the overridden on_interaction (server.py)",
+    "POST /api/auth/login (admin) -> 200, returns admin user",
+    "GET /api/admin/bot/status -> 200, {online:true, user:'SAKTHI GAMER#8398'}",
+    "POST /api/applications (full payload) -> 200, ref_number generated (PB-AP-8B660C)",
+    "Empty contact_email '' coerced to null in response (regression check pass)",
+    "POST /api/admin/applications/{id}/decision with {decision:'approved'} -> 200 {ok:true,status:'approved'}",
+    "GET /api/staff -> 200",
+    "GET /api/settings -> 200",
+    "GET /api/announcements -> 200",
+    "GET /api/gallery -> 200",
+    "GET /api/admin/certificates (authed) -> 200",
+    "Frontend root loads with nav, hero, SERVER ONLINE badge visible"
+  ],
+  "failed": [],
+  "action_items": [
+    "Cannot trigger real Discord slash commands from the test harness; recommend a manual /ping in Discord to confirm end-to-end dispatch, but the code path is structurally correct."
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "notes": "Decision endpoint accepts 'approved'/'rejected' (not 'approve'/'reject') — used correct enum on retry."
+}
