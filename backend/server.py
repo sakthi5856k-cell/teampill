@@ -100,6 +100,49 @@ async def _start_discord_bot(token: str):
         n = await db.staff.count_documents({"active": True})
         await interaction.response.send_message(f"👨‍⚕️ Active staff on roster: **{n}**", ephemeral=True)
 
+    @tree.command(name="idcard", description="Generate an EMS ID card embed")
+    @discord.app_commands.describe(name="Staff name", image="Photo URL", color="Hex color e.g. 1FA7B8",
+                                   logo="Logo URL (optional)", server_name="Server / Department name")
+    async def _idcard(interaction: discord.Interaction, name: str, image: str,
+                      color: str = "1FA7B8", logo: str = "", server_name: str = "Team Pillbox EMS"):
+        try: col = int(color.lstrip("#"), 16)
+        except Exception: col = 0x1FA7B8
+        def build_embed(n, img, c, lg, sv):
+            e = discord.Embed(title=f"🆔 {sv} — ID Card",
+                              description=f"**Name:** {n}\n**Issued:** {datetime.now(timezone.utc).strftime('%b %d, %Y')}",
+                              color=c)
+            if img: e.set_image(url=img)
+            if lg: e.set_thumbnail(url=lg)
+            e.set_footer(text=sv)
+            return e
+        state = {"name": name, "image": image, "color": col, "logo": logo, "server_name": server_name}
+        class IDView(discord.ui.View):
+            def __init__(self): super().__init__(timeout=600)
+            @discord.ui.button(label="OK", style=discord.ButtonStyle.success, emoji="✅")
+            async def ok(self, i, b):
+                for c in self.children: c.disabled = True
+                await i.response.edit_message(view=self)
+            @discord.ui.button(label="Edit", style=discord.ButtonStyle.primary, emoji="✏️")
+            async def edit(self, i, b):
+                class M(discord.ui.Modal, title="Edit ID Card"):
+                    n = discord.ui.TextInput(label="Name", default=state["name"])
+                    img = discord.ui.TextInput(label="Image URL", default=state["image"], required=False)
+                    clr = discord.ui.TextInput(label="Color hex", default=f"{state['color']:06X}", required=False)
+                    sv = discord.ui.TextInput(label="Server / Dept name", default=state["server_name"], required=False)
+                    async def on_submit(self_m, inter):
+                        state["name"] = str(self_m.n.value)
+                        state["image"] = str(self_m.img.value) or state["image"]
+                        try: state["color"] = int(str(self_m.clr.value).lstrip("#"), 16)
+                        except Exception: pass
+                        state["server_name"] = str(self_m.sv.value) or state["server_name"]
+                        await inter.response.edit_message(embed=build_embed(**state), view=IDView())
+                await i.response.send_modal(M())
+            @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, emoji="🗑️")
+            async def cancel(self, i, b):
+                try: await i.message.delete()
+                except Exception: await i.response.send_message("Cancelled", ephemeral=True)
+        await interaction.response.send_message(embed=build_embed(**state), view=IDView())
+
     @client.event
     async def on_interaction(interaction: discord.Interaction):
         if interaction.type != discord.InteractionType.component: return
