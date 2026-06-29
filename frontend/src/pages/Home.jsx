@@ -130,6 +130,44 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Department Structure */}
+      <section className="border-t border-border bg-card/30" data-testid="department-structure-section">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center">
+            <div className="text-[11px] font-bold tracking-[0.3em] uppercase text-primary">// HIERARCHY</div>
+            <h2 className="font-display text-4xl sm:text-5xl font-semibold mt-2">Department Structure</h2>
+            <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">The organizational hierarchy ensuring efficient healthcare delivery and professional excellence.</p>
+          </div>
+          <div className="mt-12 grid gap-2.5">
+            {[
+              { r: 1, t: "Director of Medical Service", c: "Leadership" },
+              { r: 2, t: "Dean", c: "Administration" },
+              { r: 3, t: "Asst. Dean", c: "Administration" },
+              { r: 4, t: "Chief Medical Superintendent", c: "Management" },
+              { r: 5, t: "Senior Surgeon", c: "Specialist" },
+              { r: 6, t: "Junior Surgeon", c: "Specialist" },
+              { r: 7, t: "Senior Consultant", c: "Consultant" },
+              { r: 8, t: "Junior Consultant", c: "Consultant" },
+              { r: 9, t: "Senior Physician", c: "Physician" },
+              { r: 10, t: "Junior Physician", c: "Physician" },
+              { r: 11, t: "Senior Resident", c: "Resident" },
+              { r: 12, t: "Junior Resident", c: "Resident" },
+              { r: 13, t: "Intern", c: "Trainee" },
+              { r: 14, t: "Paramedic", c: "Support" },
+            ].map((row) => (
+              <div key={row.r} className="lift flex items-center gap-4 border border-border bg-background px-5 py-4 rounded-sm" data-testid={`structure-rank-${row.r}`}>
+                <div className="w-10 h-10 bg-primary/10 text-primary flex items-center justify-center rounded-sm font-mono text-sm font-bold shrink-0">{String(row.r).padStart(2,'0')}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-display text-lg leading-tight truncate">{row.t}</div>
+                  <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">Rank {row.r}</div>
+                </div>
+                <span className="hidden sm:inline-block text-[10px] font-mono uppercase tracking-[0.25em] px-3 py-1 border border-border rounded-sm text-muted-foreground">{row.c}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Latest announcements */}
       <section className="border-t border-border bg-card/30" data-testid="latest-news-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">

@@ -67,8 +67,38 @@ async def _start_discord_bot(token: str):
         discord_bot_status.update({"online": True, "user": str(client.user), "error": None})
         try:
             await client.change_presence(activity=discord.Game(name="Team Pillbox EMS"), status=discord.Status.online)
-        except Exception: pass
+            # Register slash commands
+            await tree.sync()
+        except Exception as e:
+            log.warning(f"presence/sync failed: {e}")
         log.info(f"Discord bot ONLINE as {client.user}")
+
+    tree = discord.app_commands.CommandTree(client)
+
+    @tree.command(name="ping", description="Check if the EMS bot is alive")
+    async def _ping(interaction: discord.Interaction):
+        await interaction.response.send_message(f"🟢 Pong! Bot online — `{client.user}`", ephemeral=True)
+
+    @tree.command(name="status", description="Check the status of an application by reference")
+    @discord.app_commands.describe(ref="Your application reference (e.g. PB-AP-XXXXXX)")
+    async def _status(interaction: discord.Interaction, ref: str):
+        a = await db.applications.find_one({"ref_number": ref.strip().upper()}, {"_id": 0})
+        if not a:
+            await interaction.response.send_message(f"❌ No application found for `{ref}`.", ephemeral=True); return
+        emoji = {"pending": "🕓", "approved": "✅", "rejected": "❌"}.get(a.get("status"), "❔")
+        msg = (f"{emoji} **{a.get('ref_number')}** — `{a.get('status','?').upper()}`\n"
+               f"Name: {a.get('full_name')}\nRole: {a.get('desired_role')}\n"
+               + (f"Note: {a.get('decision_note')}" if a.get('decision_note') else ""))
+        await interaction.response.send_message(msg, ephemeral=True)
+
+    @tree.command(name="apply", description="Get the link to the EMS application")
+    async def _apply(interaction: discord.Interaction):
+        await interaction.response.send_message("📝 Apply to Team Pillbox: https://ems-management.preview.emergentagent.com/apply", ephemeral=True)
+
+    @tree.command(name="roster", description="Show active EMS staff count")
+    async def _roster(interaction: discord.Interaction):
+        n = await db.staff.count_documents({"active": True})
+        await interaction.response.send_message(f"👨‍⚕️ Active staff on roster: **{n}**", ephemeral=True)
 
     async def _runner():
         try:
