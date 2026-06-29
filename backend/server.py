@@ -149,39 +149,46 @@ async def _start_discord_bot(token: str):
         data = interaction.data or {}
         cid = data.get("custom_id", "")
         if not (cid.startswith("app_approve:") or cid.startswith("app_reject:")): return
+        # Defer IMMEDIATELY (3s Discord deadline) — heavy work follows
+        try: await interaction.response.defer()
+        except Exception: pass
         action, app_id = cid.split(":", 1)
         decision = "approved" if action == "app_approve" else "rejected"
-        a = await db.applications.find_one({"id": app_id})
-        if not a:
-            await interaction.response.send_message("Application not found.", ephemeral=True); return
-        if a.get("status") != "pending":
-            await interaction.response.send_message(f"Already `{a.get('status')}`.", ephemeral=True); return
-        await db.applications.update_one({"id": app_id},
-            {"$set": {"status": decision, "decided_at": utcnow(),
-                      "decided_by_discord": str(interaction.user)}})
-        # DM applicant
-        if a.get("discord_user_id"):
-            s = await _get_settings()
-            invite = (s.get("discord_invite") or "").strip()
-            if decision == "approved":
-                await send_discord_dm(a["discord_user_id"], embed={
-                    "title": "✅ Application Approved — Welcome to Team Pillbox",
-                    "description": (f"Congrats **{a.get('full_name','').split()[0]}**!\n\n"
-                                    f"**Ref:** `{a.get('ref_number')}`\n**Role:** {a.get('desired_role')}\n\n"
-                                    + (f"🔗 Join our Discord: {invite}\n\n" if invite else "")
-                                    + "Hit up Command for onboarding."),
-                    "color": 0x2A9D8F})
-            else:
-                await send_discord_dm(a["discord_user_id"], embed={
-                    "title": "❌ Application Update",
-                    "description": f"Your application `{a.get('ref_number')}` wasn't approved this round. Reapply in 14 days.",
-                    "color": 0xE63946})
         try:
-            await interaction.response.edit_message(
-                content=f"**{decision.upper()}** by {interaction.user.mention} — `{a.get('ref_number')}`",
-                view=None)
-        except Exception:
-            await interaction.response.send_message(f"Marked `{decision}` ✓", ephemeral=True)
+            a = await db.applications.find_one({"id": app_id})
+            if not a:
+                await interaction.followup.send("Application not found.", ephemeral=True); return
+            if a.get("status") != "pending":
+                await interaction.followup.send(f"Already `{a.get('status')}`.", ephemeral=True); return
+            await db.applications.update_one({"id": app_id},
+                {"$set": {"status": decision, "decided_at": utcnow(),
+                          "decided_by_discord": str(interaction.user)}})
+            if a.get("discord_user_id"):
+                s = await _get_settings()
+                invite = (s.get("discord_invite") or "").strip()
+                if decision == "approved":
+                    await send_discord_dm(a["discord_user_id"], embed={
+                        "title": "✅ Application Approved — Welcome to Team Pillbox",
+                        "description": (f"Congrats **{a.get('full_name','').split()[0]}**!\n\n"
+                                        f"**Ref:** `{a.get('ref_number')}`\n**Role:** {a.get('desired_role')}\n\n"
+                                        + (f"🔗 Join our Discord: {invite}\n\n" if invite else "")
+                                        + "Hit up Command for onboarding."),
+                        "color": 0x2A9D8F})
+                else:
+                    await send_discord_dm(a["discord_user_id"], embed={
+                        "title": "❌ Application Update",
+                        "description": f"Your application `{a.get('ref_number')}` wasn't approved this round. Reapply in 14 days.",
+                        "color": 0xE63946})
+            try:
+                await interaction.message.edit(
+                    content=f"**{decision.upper()}** by {interaction.user.mention} — `{a.get('ref_number')}`",
+                    view=None)
+            except Exception:
+                await interaction.followup.send(f"Marked `{decision}` ✓", ephemeral=True)
+        except Exception as e:
+            log.warning(f"button handler error: {e}")
+            try: await interaction.followup.send(f"Error: `{e}`", ephemeral=True)
+            except Exception: pass
 
     async def _runner():
         try:

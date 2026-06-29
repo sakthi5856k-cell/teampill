@@ -1,0 +1,22 @@
+{
+  "summary": "Verified Discord interaction defer-first fix via source inspection + backend smoke + frontend Apply flow. All REST endpoints healthy; bot online; application submit with empty optional email succeeds.",
+  "tested_scope": ["backend", "frontend", "auth", "integration"],
+  "passed": [
+    "source: on_interaction (server.py:147-191) calls `await interaction.response.defer()` at line 153 BEFORE any DB lookup, DB update, or send_discord_dm (3s deadline safe)",
+    "source: handler uses `interaction.followup.send(...)` for status/error replies (lines 160,162,187,190) and `interaction.message.edit(...)` to update original embed (line 183)",
+    "source: outer try/except wraps the work with fallback followup.send on failure (lines 157,188-191); inner try/except for message.edit fallback (lines 182-187); defer itself wrapped in try/except",
+    "source: ApplicationIn validator `_empty_email_to_none` present (server.py:340-344) coercing ''/None -> None",
+    "source: Apply.jsx submit() strips empty optional fields (contact_email, discord_user_id, steam_hex, in_game_name, availability) before POST (line 26)",
+    "API: POST /api/applications with required fields + empty contact_email -> 200, ref_number PB-AP-709599 returned",
+    "API: POST /api/auth/login admin -> 200; GET /api/admin/bot/status -> 200 {online:true, user:'SAKTHI GAMER#8398'}",
+    "API: POST /api/admin/applications/{id}/decision (approved) -> 200 {ok:true,status:'approved'}",
+    "API: /api/staff, /api/gallery, /api/announcements, /api/admin/certificates, /api/auth/me all 200",
+    "UI: Apply form submission with blank optional email succeeded -> success toast + ref PB-AP-2855F6 rendered"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "notes": "Real Discord button click cannot be exercised from harness; verified by code inspection that defer() is the first awaited call inside the component-interaction branch, eliminating the 'application did not respond' root cause."
+}
