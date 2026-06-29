@@ -100,6 +100,46 @@ async def _start_discord_bot(token: str):
         n = await db.staff.count_documents({"active": True})
         await interaction.response.send_message(f"👨‍⚕️ Active staff on roster: **{n}**", ephemeral=True)
 
+    @client.event
+    async def on_interaction(interaction: discord.Interaction):
+        if interaction.type != discord.InteractionType.component: return
+        data = interaction.data or {}
+        cid = data.get("custom_id", "")
+        if not (cid.startswith("app_approve:") or cid.startswith("app_reject:")): return
+        action, app_id = cid.split(":", 1)
+        decision = "approved" if action == "app_approve" else "rejected"
+        a = await db.applications.find_one({"id": app_id})
+        if not a:
+            await interaction.response.send_message("Application not found.", ephemeral=True); return
+        if a.get("status") != "pending":
+            await interaction.response.send_message(f"Already `{a.get('status')}`.", ephemeral=True); return
+        await db.applications.update_one({"id": app_id},
+            {"$set": {"status": decision, "decided_at": utcnow(),
+                      "decided_by_discord": str(interaction.user)}})
+        # DM applicant
+        if a.get("discord_user_id"):
+            s = await _get_settings()
+            invite = (s.get("discord_invite") or "").strip()
+            if decision == "approved":
+                await send_discord_dm(a["discord_user_id"], embed={
+                    "title": "✅ Application Approved — Welcome to Team Pillbox",
+                    "description": (f"Congrats **{a.get('full_name','').split()[0]}**!\n\n"
+                                    f"**Ref:** `{a.get('ref_number')}`\n**Role:** {a.get('desired_role')}\n\n"
+                                    + (f"🔗 Join our Discord: {invite}\n\n" if invite else "")
+                                    + "Hit up Command for onboarding."),
+                    "color": 0x2A9D8F})
+            else:
+                await send_discord_dm(a["discord_user_id"], embed={
+                    "title": "❌ Application Update",
+                    "description": f"Your application `{a.get('ref_number')}` wasn't approved this round. Reapply in 14 days.",
+                    "color": 0xE63946})
+        try:
+            await interaction.response.edit_message(
+                content=f"**{decision.upper()}** by {interaction.user.mention} — `{a.get('ref_number')}`",
+                view=None)
+        except Exception:
+            await interaction.response.send_message(f"Marked `{decision}` ✓", ephemeral=True)
+
     async def _runner():
         try:
             await client.start(token)
@@ -340,19 +380,42 @@ async def submit_application(data: ApplicationIn):
     await db.applications.insert_one(doc)
     doc.pop("_id", None)
 
-    # Post to admin channel (webhook or bot channel)
-    await post_admin_channel(embed={
-        "title": "📥 New EMS Application",
-        "description": f"**{data.full_name}** ({data.in_game_name or '—'}) applied for **{data.desired_role}**\nRef: `{ref}`",
-        "color": 0x1FA7B8,
-        "fields": [
-            {"name": "Discord", "value": data.discord_handle, "inline": True},
-            {"name": "Age", "value": str(data.age), "inline": True},
-            {"name": "Timezone", "value": data.timezone_str, "inline": True},
-            {"name": "Experience", "value": (data.experience or "—")[:300], "inline": False},
-        ],
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    })
+    # Post to admin channel via bot (with Approve/Reject buttons) or webhook fallback
+    posted_with_buttons = False
+    s = await _get_settings()
+    channel_id = (s.get("discord_admin_channel_id") or "").strip()
+    if discord_bot is not None and discord_bot_status.get("online") and channel_id:
+        try:
+            ch = discord_bot.get_channel(int(channel_id)) or await discord_bot.fetch_channel(int(channel_id))
+            embed = discord.Embed(title="📥 New EMS Application",
+                description=f"**{data.full_name}** ({data.in_game_name or '—'}) applied for **{data.desired_role}**\nRef: `{ref}`",
+                color=0x1FA7B8)
+            embed.add_field(name="Discord", value=data.discord_handle, inline=True)
+            embed.add_field(name="Age", value=str(data.age), inline=True)
+            embed.add_field(name="Timezone", value=data.timezone_str, inline=True)
+            if data.experience: embed.add_field(name="Experience", value=data.experience[:300], inline=False)
+            view = discord.ui.View(timeout=None)
+            view.add_item(discord.ui.Button(style=discord.ButtonStyle.success, label="Approve",
+                                           custom_id=f"app_approve:{aid}", emoji="✅"))
+            view.add_item(discord.ui.Button(style=discord.ButtonStyle.danger, label="Reject",
+                                            custom_id=f"app_reject:{aid}", emoji="❌"))
+            await ch.send(embed=embed, view=view)
+            posted_with_buttons = True
+        except Exception as e:
+            log.warning(f"bot channel post w/ buttons failed: {e}")
+    if not posted_with_buttons:
+        await post_admin_channel(embed={
+            "title": "📥 New EMS Application",
+            "description": f"**{data.full_name}** ({data.in_game_name or '—'}) applied for **{data.desired_role}**\nRef: `{ref}`",
+            "color": 0x1FA7B8,
+            "fields": [
+                {"name": "Discord", "value": data.discord_handle, "inline": True},
+                {"name": "Age", "value": str(data.age), "inline": True},
+                {"name": "Timezone", "value": data.timezone_str, "inline": True},
+                {"name": "Experience", "value": (data.experience or "—")[:300], "inline": False},
+            ],
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
 
     # DM applicant
     if data.discord_user_id:
@@ -397,16 +460,18 @@ async def decide_application(app_id: str, body: dict, _: dict = Depends(require_
     a = await db.applications.find_one({"id": app_id}, {"_id": 0})
 
     if a.get("discord_user_id"):
+        s = await _get_settings()
+        invite = (s.get("discord_invite") or "").strip()
         if decision == "approved":
+            desc = (f"Congrats **{a.get('full_name','').split()[0]}**!\n\n"
+                    f"**Ref:** `{a.get('ref_number')}`\n"
+                    f"**Role:** {a.get('desired_role')}\n\n"
+                    + (f"_Note from Command:_ {note}\n\n" if note else "")
+                    + (f"🔗 Join our Discord: {invite}\n\n" if invite else "")
+                    + "Hit up Command in Discord for onboarding.")
             await send_discord_dm(a["discord_user_id"], embed={
                 "title": "✅ Application Approved — Welcome to Team Pillbox",
-                "description": f"Congrats **{a.get('full_name','').split()[0]}**!\n\n"
-                               f"**Ref:** `{a.get('ref_number')}`\n"
-                               f"**Role:** {a.get('desired_role')}\n\n"
-                               + (f"_Note from Command:_ {note}\n\n" if note else "")
-                               + "Join the Discord and hit up Command for onboarding.",
-                "color": 0x2A9D8F
-            })
+                "description": desc, "color": 0x2A9D8F})
         else:
             await send_discord_dm(a["discord_user_id"], embed={
                 "title": "❌ Application Update",
@@ -414,8 +479,7 @@ async def decide_application(app_id: str, body: dict, _: dict = Depends(require_
                                f"(`{a.get('ref_number')}`) wasn't approved this round.\n\n"
                                + (f"_Note from Command:_ {note}\n\n" if note else "")
                                + "Don't sweat it — you can reapply after 14 days.",
-                "color": 0xE63946
-            })
+                "color": 0xE63946})
     return {"ok": True, "status": decision}
 
 # ------------- Gallery -------------

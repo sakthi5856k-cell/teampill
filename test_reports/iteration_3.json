@@ -1,0 +1,22 @@
+{
+  "summary": "Verified Discord approval invite-link feature and admin button-driven approval flow via source inspection + REST end-to-end. All previously-passing endpoints still work, bot is online, frontend Department Structure renders all 14 ranks.",
+  "tested_scope": ["backend", "frontend", "auth", "integration"],
+  "passed": [
+    "POST /api/applications returns ref_number PB-AP-XXXXXX and status=pending (got PB-AP-9AA4B5)",
+    "POST /api/admin/applications/{id}/decision with decision=approved sets status=approved and decided_at",
+    "Source inspection /app/backend/server.py: discord.ui.View + Button with custom_id 'app_approve:{aid}' (line 399) and 'app_reject:{aid}' (line 401) confirmed",
+    "Source inspection: on_interaction handler (lines 103-141) toggles status approved/rejected, persists decided_at + decided_by_discord, edits message, DMs applicant",
+    "Source inspection: Approval DM embed description contains conditional `🔗 Join our Discord: {invite}` snippet when settings.discord_invite is set (line 128 in on_interaction; line 470 in decide_application)",
+    "GET /api/admin/bot/status returns {online:true, user:'SAKTHI GAMER#8398'}",
+    "GET /api/staff, /api/gallery, /api/announcements all 200",
+    "POST /api/auth/login returns admin user with httpOnly cookie",
+    "GET /api/admin/stats returns counts (staff_count=6, applications_total=6, etc.)",
+    "Frontend home page renders all 14 Department Structure ranks (structure-rank-1 through structure-rank-14)"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "notes": "Could not click real Discord buttons (no Discord traffic interception possible). Code paths verified by source inspection per request. discord_bot_token in settings not touched."
+}
