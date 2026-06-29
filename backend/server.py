@@ -17,7 +17,7 @@ from typing import List, Optional
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -329,6 +329,12 @@ class ApplicationIn(BaseModel):
     desired_role: str = "EMT"
     contact_email: Optional[EmailStr] = None
     model_config = ConfigDict(populate_by_name=True)
+
+    @field_validator("contact_email", mode="before")
+    @classmethod
+    def _empty_email_to_none(cls, v):
+        if v in ("", None): return None
+        return v
 
 class GalleryItemIn(BaseModel):
     title: str; category: str; image_url: str; description: Optional[str] = None

@@ -21,7 +21,12 @@ export default function Apply() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const { data } = await api.post("/applications", { ...f, age: Number(f.age) });
+      // Strip empty optional fields so EmailStr / optional validators don't reject ""
+      const payload = { ...f, age: Number(f.age) };
+      ["contact_email", "discord_user_id", "steam_hex", "in_game_name", "availability"].forEach((k) => {
+        if (payload[k] === "" || payload[k] === undefined) delete payload[k];
+      });
+      const { data } = await api.post("/applications", payload);
       setResult(data);
       toast.success("Application received. Check Discord for your reference.");
     } catch (err) {

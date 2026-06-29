@@ -1,0 +1,22 @@
+{
+  "summary": "Verified bug fix for 'Application is not a response'. Backend ApplicationIn._empty_email_to_none correctly coerces empty contact_email to None; frontend Apply.jsx submission with blank optional fields (contact_email, discord_user_id, steam_hex) now succeeds end-to-end and shows the success screen with a ref number. Existing flows (admin login, admin applications list, staff, gallery, announcements) all healthy.",
+  "tested_scope": ["backend", "frontend", "integration", "auth"],
+  "passed": [
+    "POST /api/applications with contact_email='' -> 200, response contact_email=null (ref PB-AP-A5C29E)",
+    "POST /api/applications with valid contact_email='foo@bar.com' -> 200, email persisted (ref PB-AP-9E97C5)",
+    "POST /api/applications with invalid contact_email='notanemail' -> 422 (EmailStr still enforced)",
+    "POST /api/applications with optional fields fully stripped (frontend-style payload) -> 200 (ref PB-AP-1C8430)",
+    "POST /api/auth/login admin@teampillbox.com -> 200, returns admin user object",
+    "GET /api/admin/applications (authed) -> 200, list returned including newly submitted records with contact_email=null",
+    "GET /api/staff -> 200",
+    "GET /api/announcements -> 200",
+    "GET /api/gallery -> 200",
+    "Frontend /apply E2E: filled only required fields, left email/discord_id/steam blank, clicked apply-submit, apply-success screen rendered with apply-ref=PB-AP-285347 and toast 'Application received'."
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "notes": "Bot/Discord webhook posting is best-effort and did not block the submit. Decision endpoint not re-exercised this iteration but admin login + admin applications list confirm auth path is intact."
+}
