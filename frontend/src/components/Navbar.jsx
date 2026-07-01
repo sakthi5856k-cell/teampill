@@ -21,7 +21,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 bg-background/90 backdrop-blur border-b border-border" data-testid="navbar">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-3 group" data-testid="logo-link">
-          <img src="/logo.png" alt="Team Pillbox" className="w-10 h-10 object-contain" />
+          <img src="/ems-logo.png" alt="Team Pillbox" className="w-10 h-10 object-contain" />
           <div className="leading-none">
             <div className="font-display text-lg font-semibold tracking-tight text-foreground">EMS CORE RP</div>
             <div className="text-[10px] tracking-[0.3em] text-primary font-mono">PILL BOX</div>
