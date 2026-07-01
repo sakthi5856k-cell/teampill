@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { Cross, ArrowRight, ShieldPlus, Radio, Activity, Users, Calendar } from "lucide-react";
 
-const HERO_IMG = "https://images.unsplash.com/photo-1619025873875-59dfdd2bbbd6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwzfHxhbWJ1bGFuY2V8ZW58MHx8fHwxNzgyNTMzODA3fDA&ixlib=rb-4.1.0&q=85";
+const HERO_IMG = "https://delivery.pixelbin.io/predictions/outputs/1d/sr/upscaleRestricted/019f1d49-e995-711c-83d6-e28471b8ec18/result_0.png";
 
 export default function Home() {
   const [settings, setSettings] = useState({ server_status_label: "Server Online", server_status_online: true });
@@ -27,7 +27,7 @@ export default function Home() {
         <div className="absolute inset-0 hero-overlay" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 text-white">
           <div className="flex items-center gap-4 mb-6">
-            <img src="/logo.png" alt="EMS Core RP Pill Box" className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-[0_0_20px_rgba(31,167,184,0.4)]" data-testid="hero-logo" />
+            <img src="/logo.png" alt="TEAM PILLBOX" className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-[0_0_20px_rgba(31,167,184,0.4)]" data-testid="hero-logo" />
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 border border-white/20 rounded-sm backdrop-blur-sm" data-testid="hero-badge">
               <span className={`w-2 h-2 rounded-full ${settings.server_status_online ? "bg-green-400 dot-live" : "bg-red-400"}`}></span>
               <span className="text-[11px] font-mono tracking-[0.25em] uppercase">{settings.server_status_label}</span>
