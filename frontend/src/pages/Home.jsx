@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { Cross, ArrowRight, ShieldPlus, Radio, Activity, Users, Calendar } from "lucide-react";
 
-const HERO_IMG = "https://delivery.pixelbin.io/predictions/outputs/1d/sr/upscaleRestricted/019f1d49-e995-711c-83d6-e28471b8ec18/result_0.png";
+const HERO_IMG = "https://media.discordapp.net/attachments/812969396540145694/1521832596131024916/result_0.png?ex=6a46448d&is=6a44f30d&hm=f28be73230f3cdf301c2ef573d2e7c7311fdda85c7d34c22d8f6b9d6bb3b13a4&=&format=webp&quality=lossless&width=688&height=353";
 
 export default function Home() {
   const [settings, setSettings] = useState({ server_status_label: "Server Online", server_status_online: true });
@@ -27,7 +27,7 @@ export default function Home() {
         <div className="absolute inset-0 hero-overlay" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 text-white">
           <div className="flex items-center gap-4 mb-6">
-            <img src="/logo.png" alt="TEAM PILLBOX" className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-[0_0_20px_rgba(31,167,184,0.4)]" data-testid="hero-logo" />
+            <img src="/ems-logo.png" alt="TEAM PILLBOX" className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-[0_0_20px_rgba(31,167,184,0.4)]" data-testid="hero-logo" />
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 border border-white/20 rounded-sm backdrop-blur-sm" data-testid="hero-badge">
               <span className={`w-2 h-2 rounded-full ${settings.server_status_online ? "bg-green-400 dot-live" : "bg-red-400"}`}></span>
               <span className="text-[11px] font-mono tracking-[0.25em] uppercase">{settings.server_status_label}</span>
