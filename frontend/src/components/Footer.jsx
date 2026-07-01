@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid md:grid-cols-4 gap-10">
         <div className="md:col-span-2">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="logo" className="w-12 h-12 object-contain" />
+            <img src="/ems-logo.png" alt="logo" className="w-12 h-12 object-contain" />
             <div>
               <div className="font-display text-xl font-semibold">EMS CORE RP</div>
               <div className="text-[10px] tracking-[0.3em] text-primary font-mono">PILL BOX</div>
@@ -33,7 +33,7 @@ export default function Footer() {
           <ul className="space-y-2 text-sm">
             <li><a href="#" className="hover:text-primary">Discord</a></li>
             <li><Link to="/login" className="hover:text-primary">Staff Login</Link></li>
-            <li className="text-muted-foreground">© {new Date().getFullYear()} EMS CORE RP — Pill Box</li>
+            <li className="text-muted-foreground">© {new Date().getFullYear()} TEAM PILLBOX</li>
           </ul>
         </div>
       </div>
