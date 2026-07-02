@@ -11,7 +11,6 @@ import Gallery from "./pages/Gallery";
 import Announcements from "./pages/Announcements";
 import Apply from "./pages/Apply";
 import Login from "./pages/Login";
-import Admin from "./pages/Admin";
 import IDCard from "./pages/IDCard";
 import Certificate from "./pages/Certificate";
 import Status from "./pages/Status";
@@ -37,7 +36,6 @@ function App() {
             <Route path="/apply" element={<Apply />} />
             <Route path="/status" element={<Status />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/admin" element={<Admin />} />
             <Route path="/rules" element={<Rules />} />
           </Route>
         </Routes>
