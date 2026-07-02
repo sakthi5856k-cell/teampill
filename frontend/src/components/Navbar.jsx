@@ -10,7 +10,7 @@ const links = [
   { to: "/announcements", label: "Announcements" },
   { to: "/apply", label: "Apply" },
   { to: "/status", label: "Status" },
-  { to: "/rules", label: "Rules" },
+  { to: "/rules", label: "rules" },
 ];
 
 export default function Navbar() {
