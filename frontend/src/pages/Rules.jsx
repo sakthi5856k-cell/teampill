@@ -1,6 +1,4 @@
-import { Search } from "lucide-react";
 import React, { useState } from "react";
-const [search, setSearch] = useState("");
 import {
   ClipboardList,
   ShieldAlert,
@@ -9,6 +7,7 @@ import {
 } from "lucide-react";
 
 import RuleCard from "../components/RuleCard";
+
 import {
   generalGuidelines,
   disciplinaryRules,
@@ -41,90 +40,66 @@ const tabs = [
 
 export default function Rules() {
   const [activeTab, setActiveTab] = useState("general");
+  const [search, setSearch] = useState("");
 
-  const renderContent = () => {
+  const getFilteredData = () => {
+    let data = [];
+
     switch (activeTab) {
       case "general":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {generalGuidelines.map((rule, index) => (
-              <RuleCard
-                key={index}
-                title={rule.title}
-                icon={rule.icon}
-                points={rule.points}
-              />
-            ))}
-          </div>
-        );
+        data = generalGuidelines;
+        break;
 
       case "disciplinary":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {disciplinaryRules.map((rule, index) => (
-              <RuleCard
-                key={index}
-                title={rule.title}
-                icon={rule.icon}
-                points={rule.points}
-              />
-            ))}
-          </div>
-        );
+        data = disciplinaryRules;
+        break;
 
       case "codes":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {tenCodes.map((rule, index) => (
-              <RuleCard
-                key={index}
-                title={rule.title}
-                icon={rule.icon}
-                points={rule.points}
-              />
-            ))}
-          </div>
-        );
+        data = tenCodes;
+        break;
 
       case "grades":
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {gradeProtocols.map((rule, index) => (
-              <RuleCard
-                key={index}
-                title={rule.title}
-                icon={rule.icon}
-                points={rule.points}
-              />
-            ))}
-          </div>
-        );
+        data = gradeProtocols;
+        break;
 
       default:
-        return null;
+        data = [];
     }
+
+    return data.filter((item) =>
+      item.title.toLowerCase().includes(search.toLowerCase())
+    );
   };
+
+  const filteredData = getFilteredData();
 
   return (
     <section className="min-h-screen bg-background text-foreground">
-
       <div className="max-w-7xl mx-auto px-6 py-16">
 
         <div className="text-center">
-
-          <h1 className="font-display text-5xl font-bold">
+          <h1 className="text-5xl font-bold">
             Protocols & Guidelines
           </h1>
 
           <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-            Official standards and operational procedures for
-            EMSCORE RP Pill Box.
+            Official standards and operational procedures for EMSCORE RP Pill Box.
           </p>
-
         </div>
 
-        <div className="mt-12 flex flex-wrap justify-center gap-4">
+        {/* Search */}
+        <div className="mt-8 flex justify-center">
+          <input
+            type="text"
+            placeholder="Search rules..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full max-w-md rounded-lg border border-border bg-card px-4 py-3 outline-none focus:border-primary"
+          />
+        </div>
 
+        {/* Tabs */}
+        <div className="mt-10 flex flex-wrap justify-center gap-4">
           {tabs.map((tab) => {
             const Icon = tab.icon;
 
@@ -132,27 +107,38 @@ export default function Rules() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-5 py-3 rounded-lg transition-all duration-300
-                  ${
-                    activeTab === tab.id
-                      ? "bg-primary text-white shadow-lg"
-                      : "bg-card border border-border hover:border-primary"
-                  }`}
+                className={`flex items-center gap-2 px-5 py-3 rounded-lg transition-all duration-300 ${
+                  activeTab === tab.id
+                    ? "bg-primary text-white"
+                    : "bg-card border border-border hover:border-primary"
+                }`}
               >
-                <Icon className="w-5 h-5" />
+                <Icon size={18} />
                 {tab.title}
               </button>
             );
           })}
-
         </div>
 
-        <div className="mt-12">
-          {renderContent()}
+        {/* Cards */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredData.length > 0 ? (
+            filteredData.map((rule, index) => (
+              <RuleCard
+                key={index}
+                title={rule.title}
+                icon={rule.icon}
+                points={rule.points}
+              />
+            ))
+          ) : (
+            <div className="col-span-full text-center text-muted-foreground py-10">
+              No matching rules found.
+            </div>
+          )}
         </div>
 
       </div>
-
     </section>
   );
 }
