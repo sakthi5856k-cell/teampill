@@ -19,34 +19,30 @@ import Rules from "./pages/Rules";
 
 function App() {
   return (
-    <div className="App">
-      <AuthProvider>
-        <BrowserRouter>
-          <Toaster position="top-right" richColors />
-          <Routes>
-            {/* Printable routes without layout */}
-            <Route path="/idcard/:staffId" element={<IDCard />} />
-            <Route path="/certificate/:certId" element={<Certificate />} />
+    <AuthProvider>
+      <BrowserRouter>
+        <Toaster position="top-right" richColors />
 
-            <Route path="*" element={
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/staff" element={<Staff />} />
-                  <Route path="/gallery" element={<Gallery />} />
-                  <Route path="/announcements" element={<Announcements />} />
-                  <Route path="/apply" element={<Apply />} />
-                  <Route path="/status" element={<Status />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="/rules" element={<Rules />} />
-                </Routes>
-              </Layout>
-            } />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </div>
+        <Routes>
+          {/* Printable pages */}
+          <Route path="/idcard/:staffId" element={<IDCard />} />
+          <Route path="/certificate/:certId" element={<Certificate />} />
+
+          {/* Layout pages */}
+          <Route element={<Layout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/staff" element={<Staff />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/announcements" element={<Announcements />} />
+            <Route path="/apply" element={<Apply />} />
+            <Route path="/status" element={<Status />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/rules" element={<Rules />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
