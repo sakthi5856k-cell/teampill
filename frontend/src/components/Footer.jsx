@@ -26,7 +26,6 @@ export default function Footer() {
             <li><Link to="/announcements" className="hover:text-primary">Announcements</Link></li>
             <li><Link to="/apply" className="hover:text-primary">Apply</Link></li>
             <li><Link to="/status" className="hover:text-primary">Check Status</Link></li>
-            <li><Link to="/rules" className="hover:text-primary">Rules</Link></li
           </ul>
         </div>
         <div>
