@@ -15,6 +15,7 @@ import Admin from "./pages/Admin";
 import IDCard from "./pages/IDCard";
 import Certificate from "./pages/Certificate";
 import Status from "./pages/Status";
+import Rules from "./pages/Rules";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
                   <Route path="/status" element={<Status />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/admin" element={<Admin />} />
+                  <Route path="/rules" element={<Rules />} />
                 </Routes>
               </Layout>
             } />
