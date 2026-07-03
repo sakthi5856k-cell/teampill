@@ -2,16 +2,8 @@ import React from "react";
 
 export default function Rules() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#111827",
-        color: "white",
-        padding: "40px",
-      }}
-    >
-      <h1>Rules Page Working ✅</h1>
-      <p>This is a test page.</p>
+    <div className="min-h-screen p-10 text-white">
+      <h1>Rules</h1>
     </div>
   );
 }
