@@ -1,4 +1,10 @@
 import { motion } from "framer-motion";
+import CountUp from "react-countup";
+import {
+  MessageCircle,
+  Activity,
+  Stethoscope,
+} from "lucide-react";
 import {
   ArrowRight,
   HeartPulse,
