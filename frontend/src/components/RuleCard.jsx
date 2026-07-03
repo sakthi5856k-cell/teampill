@@ -4,65 +4,47 @@ import { CheckCircle2 } from "lucide-react";
 export default function RuleCard({
   title,
   icon: Icon,
-  points,
+  points = [],
 }) {
   return (
-    <div
-      className="
-        bg-card
-        border
-        border-border
-        rounded-xl
-        p-6
-        transition-all
-        duration-300
-        hover:border-primary
-        hover:-translate-y-1
-        hover:shadow-2xl
-      "
-    >
-      <div className="flex items-center gap-3 mb-5">
-        <div
-          className="
-            h-12
-            w-12
-            rounded-lg
-            bg-primary/10
-            flex
-            items-center
-            justify-center
-          "
-        >
-          <Icon className="w-6 h-6 text-primary" />
+    <div className="bg-card border border-border rounded-xl p-6 shadow-sm transition-all duration-300 hover:border-primary hover:-translate-y-1 hover:shadow-xl">
+
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+          {Icon && <Icon className="w-6 h-6 text-primary" />}
         </div>
 
-        <h2 className="font-display text-xl font-semibold">
-          {title}
-        </h2>
+        <div>
+          <h2 className="text-xl font-bold font-display">
+            {title}
+          </h2>
+
+          <p className="text-xs text-muted-foreground uppercase tracking-widest">
+            EMS Protocol
+          </p>
+        </div>
       </div>
 
+      {/* Rule List */}
       <ul className="space-y-3">
-        {points.map((item, index) => (
+        {points.map((point, index) => (
           <li
             key={index}
             className="flex items-start gap-3"
           >
             <CheckCircle2
-              className="
-                w-5
-                h-5
-                text-emerald-400
-                mt-0.5
-                shrink-0
-              "
+              className="text-emerald-400 mt-1 shrink-0"
+              size={18}
             />
 
             <span className="text-muted-foreground leading-7">
-              {item}
+              {point}
             </span>
           </li>
         ))}
       </ul>
+
     </div>
   );
 }
