@@ -1,198 +1,190 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { api } from "../lib/api";
-import { Cross, ArrowRight, ShieldPlus, Radio, Activity, Users, Calendar } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  HeartPulse,
+  Shield,
+  Users,
+} from "lucide-react";
 
-const HERO_IMG = "https://media.discordapp.net/attachments/812969396540145694/1521832596131024916/result_0.png?ex=6a46448d&is=6a44f30d&hm=f28be73230f3cdf301c2ef573d2e7c7311fdda85c7d34c22d8f6b9d6bb3b13a4&=&format=webp&quality=lossless&width=688&height=353";
-
-export default function Home() {
-  const [settings, setSettings] = useState({ server_status_label: "Server Online", server_status_online: true });
-  const [stats, setStats] = useState({ staff: 0, applications: 0, gallery: 0 });
-  const [latest, setLatest] = useState([]);
-
-  useEffect(() => {
-    api.get("/settings").then((r) => setSettings(r.data)).catch(() => {});
-    api.get("/staff").then((r) => setStats((s) => ({ ...s, staff: r.data.length }))).catch(() => {});
-    api.get("/gallery").then((r) => setStats((s) => ({ ...s, gallery: r.data.length }))).catch(() => {});
-    api.get("/announcements").then((r) => setLatest(r.data.slice(0, 3))).catch(() => {});
-  }, []);
-
-  const tickerWords = ["// DISPATCH READY", "// CODE 3", "// BLS / ALS", "// 24/7 RESPONSE", "// HEAVY RESCUE", "// AIR-MED STANDBY"];
-
+export default function Hero() {
   return (
-    <div data-testid="home-page">
-      {/* HERO */}
-      <section className="relative overflow-hidden border-b border-border" data-testid="hero-section">
-        <img src={HERO_IMG} alt="ambulance" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 hero-overlay" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 text-white">
-          <div className="flex items-center gap-4 mb-6">
-            <img src="/ems-logo.png" alt="TEAM PILLBOX" className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-[0_0_20px_rgba(31,167,184,0.4)]" data-testid="hero-logo" />
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 border border-white/20 rounded-sm backdrop-blur-sm" data-testid="hero-badge">
-              <span className={`w-2 h-2 rounded-full ${settings.server_status_online ? "bg-green-400 dot-live" : "bg-red-400"}`}></span>
-              <span className="text-[11px] font-mono tracking-[0.25em] uppercase">{settings.server_status_label}</span>
-            </div>
+    <section className="relative overflow-hidden min-h-screen flex items-center">
+
+      {/* Aurora */}
+      <div className="absolute inset-0">
+
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[900px] bg-cyan-500/20 blur-[180px]" />
+
+        <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-fuchsia-500/20 blur-[180px]" />
+
+      </div>
+
+      {/* Grid */}
+
+      <div className="absolute inset-0 bg-grid opacity-20"></div>
+
+      <div className="relative max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+
+        {/* Left */}
+
+        <motion.div
+          initial={{ opacity:0,y:50 }}
+          animate={{ opacity:1,y:0 }}
+          transition={{ duration:.8 }}
+        >
+
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-2">
+
+            <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse"></div>
+
+            <span className="text-cyan-300 font-semibold">
+
+              SERVER ONLINE
+
+            </span>
+
           </div>
 
-          <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-semibold mt-6 leading-[0.95] max-w-4xl" data-testid="hero-headline">
-            We carry <span className="gradient-text">the cross.</span><br />
-            You carry on <span className="italic font-medium">living.</span>
+          <h1 className="mt-8 text-6xl md:text-7xl font-black leading-tight">
+
+            We Carry
+
+            <span className="gradient-text block">
+
+              The Cross.
+
+            </span>
+
           </h1>
 
-          <p className="mt-6 max-w-xl text-base sm:text-lg text-white/80 leading-relaxed" data-testid="hero-subtitle">
-            Team Pillbox is the EMS arm of the city — paramedics, doctors, nurses, and interns
-            who train hard so you never have to wait.
+          <p className="mt-6 text-xl text-muted-foreground max-w-xl">
+
+            Official EMS CORE RP Emergency Medical
+            Services.
+
+            Protect.
+            Respond.
+            Save Lives.
+
           </p>
 
-          <div className="mt-10 flex flex-wrap gap-3" data-testid="hero-cta-row">
-            <Link
-              to="/apply"
-              data-testid="join-ems-button"
-              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3.5 rounded-sm font-medium hover:bg-primary/85 transition-colors"
-            >
-              <ShieldPlus className="w-4 h-4" /> Join EMS
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <a
-              href={settings.discord_invite || "#"}
-              target="_blank" rel="noreferrer"
-              data-testid="discord-button"
-              className="inline-flex items-center gap-2 bg-[#5865F2] text-white px-6 py-3.5 rounded-sm font-medium hover:bg-[#4752c4] transition-colors"
-            >
-              <Radio className="w-4 h-4" /> Join Discord
-            </a>
-            <Link
-              to="/staff"
-              data-testid="meet-team-button"
-              className="inline-flex items-center gap-2 border border-white/30 text-white px-6 py-3.5 rounded-sm font-medium hover:bg-white/10 transition-colors"
-            >
-              Meet the Team
-            </Link>
+          <div className="mt-10 flex flex-wrap gap-5">
+
+            <button className="rounded-xl bg-primary px-8 py-4 font-semibold flex items-center gap-2 hover:scale-105 transition">
+
+              Join EMS
+
+              <ArrowRight size={18}/>
+
+            </button>
+
+            <button className="rounded-xl border border-border px-8 py-4 hover:border-primary">
+
+              View Rules
+
+            </button>
+
           </div>
 
-          {/* Live stat strip */}
-          <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-4" data-testid="hero-stats">
-            {[
-              { icon: Users, k: "Active Staff", v: stats.staff },
-              { icon: Activity, k: "Avg Response", v: "3:42" },
-              { icon: Calendar, k: "Calls/Month", v: "1,284" },
-              { icon: Cross, k: "Lives Saved", v: "9,210" },
-            ].map((s, i) => (
-              <div key={i} className="border border-white/15 bg-white/5 px-4 py-3 rounded-sm backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] text-white/60">
-                  <s.icon className="w-3 h-3" /> {s.k}
-                </div>
-                <div className="font-display text-2xl mt-1">{s.v}</div>
+        </motion.div>
+
+        {/* Right */}
+
+        <motion.div
+
+          initial={{ opacity:0,x:80 }}
+
+          animate={{ opacity:1,x:0 }}
+
+          transition={{ duration:1 }}
+
+        >
+
+          <div className="rounded-3xl border border-primary/20 bg-card/70 backdrop-blur-xl p-8">
+
+            <div className="grid grid-cols-2 gap-6">
+
+              <div className="rounded-xl bg-background/60 p-6">
+
+                <Users className="text-cyan-400"/>
+
+                <h2 className="mt-4 text-4xl font-bold">
+
+                  128
+
+                </h2>
+
+                <p className="text-muted-foreground">
+
+                  Active Staff
+
+                </p>
+
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Marquee ticker */}
-        <div className="relative bg-[#0F172A] text-white border-t border-white/10 overflow-hidden">
-          <div className="flex whitespace-nowrap ticker-track py-3">
-            {Array.from({ length: 2 }).flatMap((_, j) =>
-              tickerWords.map((w, i) => (
-                <span key={`${j}-${i}`} className="px-8 font-mono text-xs tracking-[0.3em] text-white/70">
-                  {w}
-                </span>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
+              <div className="rounded-xl bg-background/60 p-6">
 
-      {/* Divisions */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24" data-testid="divisions-section">
-        <div className="flex items-end justify-between flex-wrap gap-4">
-          <div>
-            <div className="text-[11px] font-bold tracking-[0.3em] uppercase text-primary">// 01 — STRUCTURE</div>
-            <h2 className="font-display text-4xl sm:text-5xl font-semibold mt-2">The Chain of Command.</h2>
-          </div>
-          <Link to="/staff" className="text-sm font-medium text-foreground hover:text-primary inline-flex items-center gap-1" data-testid="view-all-staff-link">
-            View full directory <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+                <HeartPulse className="text-red-400"/>
 
-        <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {[
-            { t: "Executive", n: "01" }, { t: "HOD", n: "02" }, { t: "Doctors", n: "03" },
-            { t: "Nurses", n: "04" }, { t: "EMT", n: "05" }, { t: "Interns", n: "06" },
-          ].map((d) => (
-            <Link
-              to={`/staff?rank=${encodeURIComponent(d.t === "Executive" ? "Executive Management" : d.t === "Doctors" ? "Doctor" : d.t === "Nurses" ? "Nurse" : d.t)}`}
-              key={d.t} data-testid={`division-card-${d.t.toLowerCase()}`}
-              className="lift border border-border bg-card p-5 rounded-sm flex flex-col gap-6 group">
-              <span className="text-[10px] font-mono text-muted-foreground">UNIT {d.n}</span>
-              <span className="font-display text-2xl group-hover:text-primary transition-colors">{d.t}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
+                <h2 className="mt-4 text-4xl font-bold">
 
-      {/* Department Structure */}
-      <section className="border-t border-border bg-card/30" data-testid="department-structure-section">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
-            <div className="text-[11px] font-bold tracking-[0.3em] uppercase text-primary">// HIERARCHY</div>
-            <h2 className="font-display text-4xl sm:text-5xl font-semibold mt-2">Department Structure</h2>
-            <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">The organizational hierarchy ensuring efficient healthcare delivery and professional excellence.</p>
-          </div>
-          <div className="mt-12 grid gap-2.5">
-            {[
-              { r: 1, t: "Director of Medical Service", c: "Leadership" },
-              { r: 2, t: "Dean", c: "Administration" },
-              { r: 3, t: "Asst. Dean", c: "Administration" },
-              { r: 4, t: "Chief Medical Superintendent", c: "Management" },
-              { r: 5, t: "Senior Surgeon", c: "Specialist" },
-              { r: 6, t: "Junior Surgeon", c: "Specialist" },
-              { r: 7, t: "Senior Consultant", c: "Consultant" },
-              { r: 8, t: "Junior Consultant", c: "Consultant" },
-              { r: 9, t: "Senior Physician", c: "Physician" },
-              { r: 10, t: "Junior Physician", c: "Physician" },
-              { r: 11, t: "Senior Resident", c: "Resident" },
-              { r: 12, t: "Junior Resident", c: "Resident" },
-              { r: 13, t: "Intern", c: "Trainee" },
-              { r: 14, t: "Paramedic", c: "Support" },
-            ].map((row) => (
-              <div key={row.r} className="lift flex items-center gap-4 border border-border bg-background px-5 py-4 rounded-sm" data-testid={`structure-rank-${row.r}`}>
-                <div className="w-10 h-10 bg-primary/10 text-primary flex items-center justify-center rounded-sm font-mono text-sm font-bold shrink-0">{String(row.r).padStart(2,'0')}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-display text-lg leading-tight truncate">{row.t}</div>
-                  <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">Rank {row.r}</div>
-                </div>
-                <span className="hidden sm:inline-block text-[10px] font-mono uppercase tracking-[0.25em] px-3 py-1 border border-border rounded-sm text-muted-foreground">{row.c}</span>
+                  5,420
+
+                </h2>
+
+                <p className="text-muted-foreground">
+
+                  Lives Saved
+
+                </p>
+
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Latest announcements */}
-      <section className="border-t border-border bg-card/30" data-testid="latest-news-section">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="flex items-end justify-between flex-wrap gap-4">
-            <div>
-              <div className="text-[11px] font-bold tracking-[0.3em] uppercase text-primary">// 02 — DISPATCH BOARD</div>
-              <h2 className="font-display text-4xl sm:text-5xl font-semibold mt-2">Latest from the bay.</h2>
+              <div className="rounded-xl bg-background/60 p-6">
+
+                <Shield className="text-emerald-400"/>
+
+                <h2 className="mt-4 text-4xl font-bold">
+
+                  24/7
+
+                </h2>
+
+                <p className="text-muted-foreground">
+
+                  Response
+
+                </p>
+
+              </div>
+
+              <div className="rounded-xl bg-background/60 p-6">
+
+                <HeartPulse className="text-fuchsia-400"/>
+
+                <h2 className="mt-4 text-4xl font-bold">
+
+                  99%
+
+                </h2>
+
+                <p className="text-muted-foreground">
+
+                  Success
+
+                </p>
+
+              </div>
+
             </div>
-            <Link to="/announcements" className="text-sm font-medium hover:text-primary inline-flex items-center gap-1" data-testid="view-all-announcements-link">
-              All announcements <ArrowRight className="w-4 h-4" />
-            </Link>
+
           </div>
 
-          <div className="mt-10 grid md:grid-cols-3 gap-5">
-            {latest.length === 0 && <div className="text-muted-foreground col-span-3 text-sm">No announcements yet.</div>}
-            {latest.map((a) => (
-              <article key={a.id} data-testid={`home-announcement-${a.id}`} className="border border-border bg-background p-6 rounded-sm hover:border-primary transition-colors">
-                <span className="inline-block text-[10px] font-mono tracking-[0.25em] uppercase text-primary mb-3">{a.category}</span>
-                <h3 className="font-display text-2xl leading-tight">{a.title}</h3>
-                <p className="mt-3 text-sm text-muted-foreground leading-relaxed line-clamp-4">{a.body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-    </div>
+        </motion.div>
+
+      </div>
+
+    </section>
+
   );
 }
