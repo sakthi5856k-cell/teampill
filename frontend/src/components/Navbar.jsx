@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Menu, X, LogOut } from "lucide-react";
 
@@ -17,6 +17,10 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const [open, setOpen] = React.useState(false);
   const nav = useNavigate();
+  const location = useLocation();
+
+  // Show Staff Login only on /staff page
+  const showStaffLogin = location.pathname === "/staff";
 
   return (
     <header
@@ -46,8 +50,7 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop Menu */}
-
+        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
           {links.map((l) => (
             <NavLink
@@ -96,32 +99,29 @@ export default function Navbar() {
               </button>
             </>
           ) : (
-            <a
-              href="https://staff.psgfamily.online"
-              className="ml-2 text-sm px-3 py-2 border border-border rounded-sm hover:border-primary hover:text-primary"
-            >
-              Staff Login
-            </a>
+            showStaffLogin && (
+              <Link
+                to="/login"
+                data-testid="nav-login-link"
+                className="ml-2 text-sm px-3 py-2 border border-border rounded-sm hover:border-primary hover:text-primary"
+              >
+                Staff Login
+              </Link>
+            )
           )}
         </nav>
 
-        {/* Mobile Toggle */}
-
+        {/* Mobile Menu Button */}
         <button
           className="md:hidden p-2 text-foreground"
           onClick={() => setOpen(!open)}
           data-testid="mobile-menu-toggle"
         >
-          {open ? (
-            <X className="w-5 h-5" />
-          ) : (
-            <Menu className="w-5 h-5" />
-          )}
+          {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
       {/* Mobile Menu */}
-
       {open && (
         <div className="md:hidden border-t border-border bg-background">
           <div className="px-4 py-3 flex flex-col gap-1">
@@ -151,13 +151,15 @@ export default function Navbar() {
                 Admin
               </NavLink>
             ) : (
-              <a
-                href="https://staff.psgfamily.online"
-                onClick={() => setOpen(false)}
-                className="px-3 py-2 text-sm font-medium text-foreground/80"
-              >
-                Staff Login
-              </a>
+              showStaffLogin && (
+                <Link
+                  to="/login"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-2 text-sm font-medium text-foreground/80"
+                >
+                  Staff Login
+                </Link>
+              )
             )}
           </div>
         </div>
