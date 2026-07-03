@@ -13,161 +13,140 @@ import {
   Award,
 } from "lucide-react";
 
-/* ===========================
-   GENERAL GUIDELINES
-=========================== */
-
 export const generalGuidelines = [
   {
     title: "Professional Conduct",
     icon: Shield,
     points: [
-      "Treat every civilian respectfully.",
-      "Maintain RP at all times.",
-      "Follow chain of command.",
-      "Avoid toxicity and arguments.",
+      "Treat every civilian with respect.",
+      "Maintain roleplay quality at all times.",
+      "Follow the chain of command.",
+      "Do not abuse staff permissions.",
+      "Represent EMS professionally.",
     ],
   },
-
   {
     title: "Patient Care",
     icon: HeartPulse,
     points: [
-      "Prioritize patient safety.",
-      "Always perform proper RP treatment.",
-      "Never rush medical procedures.",
+      "Patient safety is your highest priority.",
+      "Perform proper medical RP.",
+      "Never skip treatment procedures.",
       "Document serious incidents.",
     ],
   },
-
   {
     title: "Medical Equipment",
     icon: Stethoscope,
     points: [
       "Use equipment correctly.",
-      "Return medical supplies.",
+      "Restock medical supplies.",
       "Report damaged equipment.",
-      "Keep ambulance stocked.",
+      "Keep emergency kits ready.",
     ],
   },
-
   {
-    title: "Ambulance Usage",
+    title: "Ambulance Operations",
     icon: Ambulance,
     points: [
       "Drive responsibly.",
-      "Use sirens only when necessary.",
-      "Never abandon vehicles.",
-      "Park correctly after duty.",
+      "Use sirens only during emergencies.",
+      "Never abandon EMS vehicles.",
+      "Park vehicles correctly after duty.",
     ],
   },
-
   {
     title: "Emergency Response",
     icon: Siren,
     points: [
       "Respond immediately.",
       "Inform dispatch.",
-      "Coordinate with police.",
-      "Protect civilians.",
+      "Coordinate with Police.",
+      "Protect civilians first.",
     ],
   },
-
   {
     title: "Teamwork",
     icon: Users,
     points: [
-      "Respect fellow staff.",
+      "Respect fellow EMS staff.",
       "Communicate clearly.",
-      "Support junior members.",
-      "Share information.",
+      "Help junior members.",
+      "Share important information.",
     ],
   },
 ];
 
-/* ===========================
-   DISCIPLINARY RULES
-=========================== */
-
 export const disciplinaryRules = [
   {
-    title: "Minor Offences",
+    title: "Minor Violations",
     icon: AlertTriangle,
     points: [
-      "Verbal warning.",
-      "Written warning.",
-      "Supervisor review.",
+      "Verbal Warning",
+      "Written Warning",
+      "Supervisor Review",
     ],
   },
-
   {
-    title: "Major Offences",
+    title: "Major Violations",
     icon: Shield,
     points: [
-      "Suspension.",
-      "Command investigation.",
-      "Possible termination.",
+      "Suspension",
+      "Internal Investigation",
+      "Termination if required",
     ],
   },
-
   {
     title: "Power Abuse",
     icon: ClipboardCheck,
     points: [
       "No abuse of authority.",
       "No corruption.",
-      "Immediate report required.",
+      "Immediate report to Command.",
     ],
   },
 ];
-
-/* ===========================
-   10 CODES
-=========================== */
 
 export const tenCodes = [
   {
-    title: "Emergency Codes",
+    title: "Common EMS Codes",
     icon: Radio,
     points: [
       "10-4  → Acknowledged",
+      "10-7  → Out of Service",
       "10-8  → Available",
       "10-20 → Location",
-      "10-97 → Arrived",
+      "10-97 → On Scene",
       "10-98 → Assignment Complete",
+      "10-99 → Emergency",
     ],
   },
 ];
-
-/* ===========================
-   GRADE PROTOCOLS
-=========================== */
 
 export const gradeProtocols = [
   {
     title: "Intern",
     icon: BookOpen,
     points: [
-      "Training phase.",
-      "Requires supervision.",
+      "Training Period",
+      "Works under supervision",
     ],
   },
-
   {
     title: "EMT",
     icon: Activity,
     points: [
-      "Handles emergency calls.",
-      "Provides first response.",
+      "Responds to emergencies",
+      "Provides first response treatment",
     ],
   },
-
   {
     title: "Doctor",
     icon: Award,
     points: [
-      "Leads advanced treatment.",
-      "Supervises medical operations.",
+      "Advanced medical treatment",
+      "Leads hospital operations",
+      "Supervises EMS staff",
     ],
   },
 ];
