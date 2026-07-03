@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ClipboardList,
   ShieldAlert,
@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 
 import RuleCard from "../components/RuleCard";
-
 import {
   generalGuidelines,
   disciplinaryRules,
@@ -16,129 +15,74 @@ import {
 } from "../data/rulesData";
 
 const tabs = [
-  {
-    id: "general",
-    title: "General Guidelines",
-    icon: ClipboardList,
-  },
-  {
-    id: "disciplinary",
-    title: "Disciplinary",
-    icon: ShieldAlert,
-  },
-  {
-    id: "codes",
-    title: "10 Codes",
-    icon: Hash,
-  },
-  {
-    id: "grades",
-    title: "Grade Protocols",
-    icon: GraduationCap,
-  },
+  { id: "general", title: "General Guidelines", icon: ClipboardList },
+  { id: "disciplinary", title: "Disciplinary", icon: ShieldAlert },
+  { id: "codes", title: "10 Codes", icon: Hash },
+  { id: "grades", title: "Grade Protocols", icon: GraduationCap },
 ];
 
 export default function Rules() {
   const [activeTab, setActiveTab] = useState("general");
   const [search, setSearch] = useState("");
 
-  const getFilteredData = () => {
-    let data = [];
-
+  const data = useMemo(() => {
     switch (activeTab) {
       case "general":
-        data = generalGuidelines;
-        break;
-
+        return generalGuidelines || [];
       case "disciplinary":
-        data = disciplinaryRules;
-        break;
-
+        return disciplinaryRules || [];
       case "codes":
-        data = tenCodes;
-        break;
-
+        return tenCodes || [];
       case "grades":
-        data = gradeProtocols;
-        break;
-
+        return gradeProtocols || [];
       default:
-        data = [];
+        return [];
     }
+  }, [activeTab]);
 
-    return data.filter((item) =>
-      item.title.toLowerCase().includes(search.toLowerCase())
-    );
-  };
-
-  const filteredData = getFilteredData();
+  const filteredData = data.filter((item) =>
+    (item.title || "").toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <section className="min-h-screen bg-background text-foreground">
-      <div className="max-w-7xl mx-auto px-6 py-16">
+    <div className="min-h-screen p-8">
+      <h1 className="text-4xl font-bold mb-6">Protocols & Guidelines</h1>
 
-        <div className="text-center">
-          <h1 className="text-5xl font-bold">
-            Protocols & Guidelines
-          </h1>
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search..."
+        className="border p-2 rounded w-full max-w-md mb-6"
+      />
 
-          <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-            Official standards and operational procedures for EMSCORE RP Pill Box.
-          </p>
-        </div>
-
-        {/* Search */}
-        <div className="mt-8 flex justify-center">
-          <input
-            type="text"
-            placeholder="Search rules..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full max-w-md rounded-lg border border-border bg-card px-4 py-3 outline-none focus:border-primary"
-          />
-        </div>
-
-        {/* Tabs */}
-        <div className="mt-10 flex flex-wrap justify-center gap-4">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-5 py-3 rounded-lg transition-all duration-300 ${
-                  activeTab === tab.id
-                    ? "bg-primary text-white"
-                    : "bg-card border border-border hover:border-primary"
-                }`}
-              >
-                <Icon size={18} />
-                {tab.title}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Cards */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredData.length > 0 ? (
-            filteredData.map((rule, index) => (
-              <RuleCard
-                key={index}
-                title={rule.title}
-                icon={rule.icon}
-                points={rule.points}
-              />
-            ))
-          ) : (
-            <div className="col-span-full text-center text-muted-foreground py-10">
-              No matching rules found.
-            </div>
-          )}
-        </div>
-
+      <div className="flex flex-wrap gap-3 mb-8">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 rounded ${
+                activeTab === tab.id ? "bg-blue-600 text-white" : "border"
+              }`}
+            >
+              <Icon size={18} className="inline mr-2" />
+              {tab.title}
+            </button>
+          );
+        })}
       </div>
-    </section>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredData.map((rule, index) => (
+          <RuleCard
+            key={index}
+            title={rule.title}
+            icon={rule.icon}
+            points={rule.points || []}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
