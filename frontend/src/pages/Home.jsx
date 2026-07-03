@@ -5,6 +5,18 @@ import {
   Shield,
   Users,
 } from "lucide-react";
+import { motion } from "framer-motion";
+import CountUp from "react-countup";
+import {
+  ArrowRight,
+  HeartPulse,
+  Shield,
+  Users,
+  MessageCircle,
+  Ambulance,
+  Stethoscope,
+  Activity,
+} from "lucide-react";
 
 export default function Hero() {
   return (
