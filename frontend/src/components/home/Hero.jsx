@@ -41,6 +41,56 @@ export default function Hero() {
         className="absolute bottom-0 right-0 h-[700px] w-[700px] rounded-full bg-fuchsia-600/20 blur-[180px]"
       />
 
+      <motion.div
+  animate={{
+    y: [0, -25, 0],
+    rotate: [0, 5, 0],
+  }}
+  transition={{
+    repeat: Infinity,
+    duration: 6,
+  }}
+  className="absolute right-20 top-24 hidden xl:block"
+>
+  <Ambulance
+    size={90}
+    className="text-cyan-400/20"
+  />
+</motion.div>
+
+      <motion.div
+  animate={{
+    rotate: [0, 360],
+  }}
+  transition={{
+    repeat: Infinity,
+    duration: 18,
+    ease: "linear",
+  }}
+  className="absolute left-10 bottom-20 hidden xl:block"
+>
+  <HeartPulse
+    size={75}
+    className="text-red-400/20"
+  />
+</motion.div>
+
+      <motion.div
+  animate={{
+    y: [0, 20, 0],
+  }}
+  transition={{
+    repeat: Infinity,
+    duration: 8,
+  }}
+  className="absolute top-40 left-40 hidden xl:block"
+>
+  <Activity
+    size={65}
+    className="text-fuchsia-400/20"
+  />
+</motion.div>
+
       <div className="relative z-10 mx-auto grid max-w-7xl gap-20 px-6 lg:grid-cols-2">
 
         {/* LEFT */}
@@ -327,6 +377,27 @@ Join over 1500+ EMS CORE RP members.
         </motion.div>
 
       </div>
+
+        {[...Array(18)].map((_, i) => (
+  <motion.span
+    key={i}
+    animate={{
+      y: [0, -35, 0],
+      opacity: [0.2, 1, 0.2],
+    }}
+    transition={{
+      repeat: Infinity,
+      duration: 5 + i,
+    }}
+    className="absolute rounded-full bg-cyan-400/20"
+    style={{
+      width: 4,
+      height: 4,
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+    }}
+  />
+))}
 
     </section>
   );
