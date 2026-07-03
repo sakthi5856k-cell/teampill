@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import CountUp from "react-countup";
+import { Activity, Users, HeartPulse, Ambulance } from "lucide-react";
 import {
   ArrowRight,
   Shield,
@@ -159,27 +161,121 @@ export default function Hero() {
 
             {/* Stats cards Part 2 */}
 
-            <div className="mt-8 space-y-5">
+<div className="mt-8 grid gap-5">
 
-              <div className="rounded-2xl border border-border bg-background/60 p-6">
+  <motion.div
+    whileHover={{ y: -6 }}
+    className="rounded-2xl border border-primary/20 bg-background/60 backdrop-blur-xl p-6 transition-all"
+  >
+    <div className="flex justify-between items-center">
 
-                Active Staff
+      <div>
 
-              </div>
+        <p className="text-sm text-muted-foreground">
 
-              <div className="rounded-2xl border border-border bg-background/60 p-6">
+          Active Staff
 
-                Emergency Calls
+        </p>
 
-              </div>
+        <h2 className="mt-2 text-4xl font-bold">
 
-              <div className="rounded-2xl border border-border bg-background/60 p-6">
+          <CountUp end={128} duration={2} />
 
-                Lives Saved
+        </h2>
 
-              </div>
+      </div>
 
-            </div>
+      <Users className="text-cyan-400" size={34} />
+
+    </div>
+
+  </motion.div>
+
+  <motion.div
+    whileHover={{ y: -6 }}
+    className="rounded-2xl border border-primary/20 bg-background/60 backdrop-blur-xl p-6 transition-all"
+  >
+    <div className="flex justify-between items-center">
+
+      <div>
+
+        <p className="text-sm text-muted-foreground">
+
+          Emergency Calls
+
+        </p>
+
+        <h2 className="mt-2 text-4xl font-bold">
+
+          <CountUp end={5842} separator="," duration={3} />
+
+        </h2>
+
+      </div>
+
+      <Ambulance className="text-emerald-400" size={34} />
+
+    </div>
+
+  </motion.div>
+
+  <motion.div
+    whileHover={{ y: -6 }}
+    className="rounded-2xl border border-primary/20 bg-background/60 backdrop-blur-xl p-6 transition-all"
+  >
+    <div className="flex justify-between items-center">
+
+      <div>
+
+        <p className="text-sm text-muted-foreground">
+
+          Lives Saved
+
+        </p>
+
+        <h2 className="mt-2 text-4xl font-bold">
+
+          <CountUp end={9315} separator="," duration={3} />
+
+        </h2>
+
+      </div>
+
+      <HeartPulse className="text-red-400" size={34} />
+
+    </div>
+
+  </motion.div>
+
+  <motion.div
+    whileHover={{ y: -6 }}
+    className="rounded-2xl border border-primary/20 bg-background/60 backdrop-blur-xl p-6 transition-all"
+  >
+    <div className="flex justify-between items-center">
+
+      <div>
+
+        <p className="text-sm text-muted-foreground">
+
+          Success Rate
+
+        </p>
+
+        <h2 className="mt-2 text-4xl font-bold">
+
+          99%
+
+        </h2>
+
+      </div>
+
+      <Activity className="text-fuchsia-400" size={34} />
+
+    </div>
+
+  </motion.div>
+
+</div>
 
             <div className="mt-8 rounded-2xl border border-primary/20 bg-background/60 p-6">
 
@@ -197,9 +293,23 @@ export default function Hero() {
 
               <p className="mt-4 text-muted-foreground">
 
-                Stay connected with EMS CORE RP.
+<div className="mt-4 flex items-center gap-2">
 
-              </p>
+<div className="h-3 w-3 rounded-full bg-green-500 animate-pulse"/>
+
+<span className="text-green-400">
+
+Community Online
+
+</span>
+
+</div>
+
+<p className="mt-4 text-muted-foreground">
+
+Join over 1500+ EMS CORE RP members.
+
+</p>
 
               <a
                 href="https://discord.gg/YOURINVITE"
