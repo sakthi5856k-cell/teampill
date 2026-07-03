@@ -206,12 +206,96 @@ export default function Rules() {
 
       </div>
 
-      {/* Rule Cards will be added in Part 2 */}
+{/* Rules Grid */}
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
+<div className="max-w-7xl mx-auto px-6 py-12">
 
-      </div>
+  {(() => {
+    const filteredRules = currentTab.data.filter((rule) =>
+      rule.title.toLowerCase().includes(search.toLowerCase()) ||
+      rule.points.some((point) =>
+        point.toLowerCase().includes(search.toLowerCase())
+      )
+    );
 
+    if (filteredRules.length === 0) {
+      return (
+        <div className="bg-card border border-border rounded-2xl p-16 text-center">
+
+          <Search className="mx-auto w-14 h-14 text-muted-foreground mb-6" />
+
+          <h2 className="text-3xl font-bold">
+            No Rules Found
+          </h2>
+
+          <p className="mt-3 text-muted-foreground">
+            Try another keyword or switch category.
+          </p>
+
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div className="flex items-center justify-between mb-8">
+
+          <div>
+
+            <h2 className="text-3xl font-display font-bold">
+
+              {currentTab.title}
+
+            </h2>
+
+            <p className="text-muted-foreground mt-2">
+
+              Showing {filteredRules.length} rule
+              {filteredRules.length !== 1 && "s"}
+
+            </p>
+
+          </div>
+
+          <div className="hidden md:flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-lg">
+
+            <ClipboardList className="w-5 h-5 text-primary" />
+
+            <span className="font-semibold">
+
+              EMS Protocol
+
+            </span>
+
+          </div>
+
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+
+          {filteredRules.map((rule, index) => (
+
+            <div
+              key={index}
+              className="animate-in fade-in duration-500"
+            >
+
+              <RuleCard
+                title={rule.title}
+                icon={rule.icon}
+                points={rule.points}
+              />
+
+            </div>
+
+          ))}
+
+        </div>
+      </>
+    );
+  })()}
+
+</div>
     </section>
   );
 }
