@@ -38,6 +38,7 @@ function App() {
             <Route path="/status" element={<Status />} />
             <Route path="/login" element={<Login />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/rules" element={<Rules />} />
           </Route>
         </Routes>
       </BrowserRouter>
