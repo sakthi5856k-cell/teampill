@@ -1,13 +1,14 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import CountUp from "react-countup";
-import { Activity, Users, HeartPulse, Ambulance } from "lucide-react";
 import {
   ArrowRight,
   Shield,
   HeartPulse,
   Ambulance,
   MessageCircle,
+  Activity,
+  Users,
 } from "lucide-react";
 
 export default function Hero() {
@@ -227,11 +228,10 @@ export default function Hero() {
 
         </p>
 
-        <h2 className="mt-2 text-4xl font-bold">
-
-          <CountUp end={128} duration={2} />
-
-        </h2>
+<h2 className="mt-2 text-4xl font-bold">
+  <CountUp end={99} duration={2} />
+  %
+</h2>
 
       </div>
 
@@ -313,7 +313,7 @@ export default function Hero() {
 
         <h2 className="mt-2 text-4xl font-bold">
 
-          99%
+  <CountUp end={99} duration={2} />%
 
         </h2>
 
@@ -341,11 +341,9 @@ export default function Hero() {
 
               </div>
 
-              <p className="mt-4 text-muted-foreground">
-
 <div className="mt-4 flex items-center gap-2">
 
-<div className="h-3 w-3 rounded-full bg-green-500 animate-pulse"/>
+<div className="h-3 w-3 rounded-full bg-green-500 animate-pulse"></div>
 
 <span className="text-green-400">
 
@@ -378,26 +376,26 @@ Join over 1500+ EMS CORE RP members.
 
       </div>
 
-        {[...Array(18)].map((_, i) => (
-  <motion.span
-    key={i}
-    animate={{
-      y: [0, -35, 0],
-      opacity: [0.2, 1, 0.2],
-    }}
-    transition={{
-      repeat: Infinity,
-      duration: 5 + i,
-    }}
-    className="absolute rounded-full bg-cyan-400/20"
-    style={{
-      width: 4,
-      height: 4,
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
-    }}
-  />
-))}
+      {[...Array(18)].map((_, i) => (
+        <motion.span
+          key={i}
+          animate={{
+            y: [0, -35, 0],
+            opacity: [0.2, 1, 0.2],
+          }}
+          transition={{
+            repeat: Infinity,
+            duration: 5 + i,
+          }}
+          className="absolute rounded-full bg-cyan-400/20"
+          style={{
+            width: 4,
+            height: 4,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+          }}
+        />
+      ))}
 
     </section>
   );
