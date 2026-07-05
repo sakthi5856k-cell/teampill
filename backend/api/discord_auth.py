@@ -92,7 +92,7 @@ async def discord_callback(code: str):
 
         user = user_response.json()
 
-            # Check Discord Server Membership
+        # Check Discord Server Membership
         guild_response = await client.get(
             f"https://discord.com/api/v10/guilds/{GUILD_ID}/members/{user['id']}",
             headers={
@@ -166,7 +166,7 @@ async def discord_callback(code: str):
         "discord_id": discord_id
     })
 
-        # Staff Role Check
+    # Staff Role Check
     if not existing["is_staff"]:
         return {
             "success": False,
