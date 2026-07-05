@@ -1,10 +1,13 @@
 import os
 import httpx
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import RedirectResponse
 
-router = APIRouter(prefix="/auth")
+from database.users import users
+
+router = APIRouter(prefix="/auth", tags=["Discord Auth"])
 
 CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
 CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET")
@@ -44,6 +47,7 @@ async def discord_callback(code: str):
 
     async with httpx.AsyncClient() as client:
 
+        # Get Access Token
         token_response = await client.post(
             token_url,
             data=data,
@@ -53,12 +57,13 @@ async def discord_callback(code: str):
         if token_response.status_code != 200:
             raise HTTPException(
                 status_code=400,
-                detail="Discord token failed"
+                detail="Discord token request failed."
             )
 
         token_json = token_response.json()
         access_token = token_json["access_token"]
 
+        # Get Discord User
         user_response = await client.get(
             "https://discord.com/api/users/@me",
             headers={
@@ -66,6 +71,81 @@ async def discord_callback(code: str):
             }
         )
 
+        if user_response.status_code != 200:
+            raise HTTPException(
+                status_code=400,
+                detail="Unable to fetch Discord user."
+            )
+
         user = user_response.json()
 
-        return user
+    discord_id = user["id"]
+
+    existing = await users.find_one({
+        "discord_id": discord_id
+    })
+
+    if existing is None:
+
+        new_user = {
+
+            "discord_id": user["id"],
+
+            "username": user["username"],
+
+            "avatar": user.get("avatar"),
+
+            "email": user.get("email"),
+
+            "staff_id": None,
+
+            "rank": None,
+
+            "department": None,
+
+            "is_staff": False,
+
+            "is_admin": False,
+
+            "activity": 0,
+
+            "awards": [],
+
+            "rewards": [],
+
+            "created_at": datetime.utcnow()
+
+        }
+
+        await users.insert_one(new_user)
+
+        existing = await users.find_one({
+            "discord_id": discord_id
+        })
+
+    if existing["is_staff"] is False:
+
+        return {
+            "success": False,
+            "message": "You are not EMS Staff.",
+            "user": {
+                "username": existing["username"],
+                "discord_id": existing["discord_id"]
+            }
+        }
+
+    return {
+        "success": True,
+        "message": "Login Successful",
+        "user": {
+            "discord_id": existing["discord_id"],
+            "username": existing["username"],
+            "staff_id": existing["staff_id"],
+            "rank": existing["rank"],
+            "department": existing["department"],
+            "activity": existing["activity"],
+            "awards": existing["awards"],
+            "rewards": existing["rewards"],
+            "is_admin": existing["is_admin"]
+        }
+    }
