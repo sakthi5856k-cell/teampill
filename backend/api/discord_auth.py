@@ -7,6 +7,8 @@ from fastapi.responses import RedirectResponse
 
 from database.users import users
 
+from auth.jwt import create_access_token
+
 router = APIRouter(prefix="/auth", tags=["Discord Auth"])
 
 CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
@@ -134,14 +136,20 @@ async def discord_callback(code: str):
             }
         }
 
+    token = create_access_token({
+        "discord_id": existing["discord_id"],
+        "staff_id": existing["staff_id"]
+    })
+
     return {
         "success": True,
-        "message": "Login Successful",
+        "access_token": token,
+        "token_type": "Bearer",
         "user": {
             "discord_id": existing["discord_id"],
             "username": existing["username"],
-            "staff_id": existing["staff_id"],
             "rank": existing["rank"],
+            "staff_id": existing["staff_id"],
             "department": existing["department"],
             "activity": existing["activity"],
             "awards": existing["awards"],
