@@ -14,7 +14,8 @@ import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import IDCard from "./pages/IDCard";
 import Certificate from "./pages/Certificate";
-import Status from "./pages/Status";
+import Status from "./pages/Status"
+import Login from "./pages/DiacordLogin";
 import Rules from "./pages/Rules";
 
 function App() {
