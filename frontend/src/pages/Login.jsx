@@ -25,44 +25,114 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4" data-testid="login-page">
-      <div className="w-full max-w-md">
-        <div className="flex items-center gap-2.5 mb-8 justify-center">
-          <div className="w-10 h-10 bg-primary text-white flex items-center justify-center rounded-sm">
-            <Cross className="w-5 h-5" strokeWidth={2.5} />
+  <div className="min-h-screen bg-[#070b14] bg-[url('/images/ambulance.jpg')] bg-cover bg-center relative">
+
+    <div className="absolute inset-0 bg-black/70"></div>
+
+    <div className="relative z-10 flex items-center justify-center min-h-screen px-5">
+
+      <div className="w-full max-w-lg">
+
+        {/* Logo */}
+        <div className="text-center mb-8">
+
+          <div className="w-24 h-24 mx-auto rounded-full bg-cyan-500 flex items-center justify-center shadow-xl">
+
+            <Cross size={50} className="text-white"/>
+
           </div>
-          <div className="font-display text-2xl font-semibold text-foreground">TEAM PILLBOX</div>
+
+          <h1 className="mt-6 text-5xl font-extrabold text-white">
+            TEAM <span className="text-cyan-400">PILLBOX</span>
+          </h1>
+
+          <p className="text-cyan-300 tracking-[5px] uppercase mt-2">
+            Emergency Medical Services
+          </p>
+
         </div>
 
-        <div className="bg-card border border-border rounded-sm p-8">
-          <div className="flex items-center gap-2 text-[11px] font-mono tracking-[0.25em] uppercase text-primary">
-            <Lock className="w-3 h-3" /> Secure Access
-          </div>
-          <h1 className="font-display text-3xl font-semibold mt-2 text-foreground">Staff Login</h1>
-          <p className="text-sm text-muted-foreground mt-1">Authorized personnel only.</p>
+        {/* Login Card */}
 
-          <form onSubmit={submit} className="mt-6 grid gap-4" data-testid="login-form">
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-muted-foreground">Email</span>
-              <input data-testid="login-email" required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full mt-1.5 border border-border rounded-sm px-3 py-2.5 focus:ring-2 focus:ring-primary outline-none text-sm" />
-            </label>
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-muted-foreground">Password</span>
-              <input data-testid="login-password" required type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full mt-1.5 border border-border rounded-sm px-3 py-2.5 focus:ring-2 focus:ring-primary outline-none text-sm" />
-            </label>
-            {err && <div className="text-sm text-primary" data-testid="login-error">{err}</div>}
+        <div className="backdrop-blur-xl bg-[#111827]/80 border border-cyan-500/30 rounded-3xl p-8 shadow-2xl">
+
+          <div className="flex items-center gap-2 text-cyan-400 mb-2">
+
+            <Lock size={18}/>
+
+            <span className="uppercase tracking-[4px] text-xs">
+              Secure Access
+            </span>
+
+          </div>
+
+          <h2 className="text-4xl font-bold text-white">
+            Staff Login
+          </h2>
+
+          <p className="text-gray-400 mt-2">
+            Authorized personnel only.
+          </p>
+
+          <form onSubmit={submit} className="mt-8 space-y-5">
+
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e)=>setEmail(e.target.value)}
+              placeholder="Email Address"
+              className="w-full rounded-xl bg-[#1f2937] border border-gray-700 px-5 py-4 text-white focus:border-cyan-500 outline-none"
+            />
+
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e)=>setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full rounded-xl bg-[#1f2937] border border-gray-700 px-5 py-4 text-white focus:border-cyan-500 outline-none"
+            />
+
+            {err && (
+              <div className="text-red-400 text-sm">
+                {err}
+              </div>
+            )}
+
             <button
-              data-testid="login-submit"
               disabled={submitting}
-              className="bg-primary text-white px-5 py-3 rounded-sm font-medium hover:bg-[#d62828] transition-colors disabled:opacity-60"
+              className="w-full py-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 transition text-white font-bold text-lg"
             >
-              {submitting ? "Signing in…" : "Sign in"}
+              {submitting ? "Signing In..." : "Sign In"}
             </button>
+
           </form>
+
+          <div className="my-6 flex items-center">
+
+            <div className="flex-1 border-t border-gray-700"></div>
+
+            <span className="px-3 text-gray-500 text-sm">
+              OR
+            </span>
+
+            <div className="flex-1 border-t border-gray-700"></div>
+
+          </div>
+
+          <button
+            onClick={() => window.location.href="/auth/discord/login"}
+            className="w-full rounded-xl py-4 bg-[#5865F2] hover:bg-[#4752C4] transition text-white font-semibold"
+          >
+            Login with Discord
+          </button>
+
         </div>
+
       </div>
+
     </div>
-  );
-}
+
+  </div>
+);
