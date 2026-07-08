@@ -25,7 +25,7 @@ export default function Login() {
   };
 
   return (
-  <div className="min-h-screen bg-[#070b14] bg-[url('/images/ambulance.jpg')] bg-cover bg-center relative">
+  <div className="min-h-screen bg-[#070b14] bg-[url('/ambulance.jpg')] bg-cover bg-center relative">
 
     <div className="absolute inset-0 bg-black/70"></div>
 
