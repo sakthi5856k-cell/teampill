@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { api } from "../lib/api";
 import StatCard from "../components/admin/StatCard";
+import RecentActivity from "../components/admin/RecentActivity";
+import QuickActions from "../components/admin/QuickActions";
 
 const cards = [
   {
@@ -84,6 +86,15 @@ export default function Dashboard() {
       change="+12%"
     />
   ))}
+</div>
+
+      <div className="mt-8">
+    <RecentActivity />
+</div>
+
+      <div className="grid lg:grid-cols-2 gap-6 mt-8">
+    <DashboardChart />
+    <QuickActions />
 </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
