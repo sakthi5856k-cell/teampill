@@ -10,12 +10,15 @@ import {
 import { api } from "../lib/api";
 import { toast } from "sonner";
 import AddStaffModal from "../components/admin/AddStaffModal";
+import EditStaffModal from "../components/admin/EditStaffModal";
 
 export default function Staff() {
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState(null);
 
   async function loadStaff() {
     try {
