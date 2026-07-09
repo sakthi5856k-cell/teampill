@@ -10,6 +10,7 @@ import {
   Activity,
 } from "lucide-react";
 import { api } from "../lib/api";
+import StatCard from "../components/admin/StatCard";
 
 const cards = [
   {
@@ -72,39 +73,18 @@ export default function Dashboard() {
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-5">
-        {cards.map((card) => (
-          <div
-            key={card.key}
-            className={`rounded-2xl bg-gradient-to-r ${card.color} p-[1px]`}
-          >
-            <div className="rounded-2xl bg-slate-900 p-6">
-
-              <div className="flex justify-between">
-
-                <div>
-
-                  <p className="text-slate-400 text-sm">
-                    {card.title}
-                  </p>
-
-                  <h2 className="text-4xl font-bold text-white mt-2">
-                    {stats[card.key] ?? 0}
-                  </h2>
-
-                </div>
-
-                <card.icon
-                  className="text-cyan-400"
-                  size={38}
-                />
-
-              </div>
-
-            </div>
-          </div>
-        ))}
-      </div>
+<div className="grid lg:grid-cols-3 md:grid-cols-2 gap-5">
+  {cards.map((card) => (
+    <StatCard
+      key={card.key}
+      title={card.title}
+      value={stats[card.key] ?? 0}
+      icon={card.icon}
+      color={card.color}
+      change="+12%"
+    />
+  ))}
+</div>
 
       <div className="grid lg:grid-cols-2 gap-6">
 
