@@ -171,16 +171,18 @@ export default function Staff() {
                   >
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={
-                            item.photo_url?.trim()
-                             ? item.photo_url
-                             : `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}`
-                           }
-                          alt={item.name}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-
+<img
+  src={
+    item.photo_url?.trim()
+      ? item.photo_url
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}`
+  }
+  alt={item.name}
+  onError={(e) => {
+    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}`;
+  }}
+  className="w-12 h-12 rounded-full object-cover"
+/>
                         <div>
                           <h3 className="text-white font-medium">
                             {item.name}
