@@ -18,10 +18,6 @@ from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Respons
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
-from api.auth import router as auth_router
-from api.staff import router as staff_router
-from api.discord_auth import router as discord_router
-from api.me import router as me_router
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -697,50 +693,3 @@ async def shutdown():
 app.include_router(api)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True,
                    allow_methods=["*"], allow_headers=["*"])
-
-app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
-app.include_router(staff_router, prefix="/staff", tags=["Staff"])
-app.include_router(discord_router)
-app.include_router(me_router)
-
-@app.get("/")
-async def root():
-    return {
-        "status": "online",
-        "project": "Team Pillbox"
-    }
-
-app = FastAPI(
-    title="Team Pillbox API",
-    version="1.0.0"
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000"
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-app.include_router(
-    auth_router,
-    prefix="/auth",
-    tags=["Authentication"]
-)
-
-app.include_router(
-    staff_router,
-    prefix="/staff",
-    tags=["Staff"]
-)
-
-@app.get("/")
-async def home():
-    return {
-        "status": "online",
-        "project": "Team Pillbox",
-        "version": "1.0.0"
-    }
