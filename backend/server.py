@@ -93,7 +93,7 @@ async def _start_discord_bot(token: str):
 
     @tree.command(name="apply", description="Get the link to the EMS application")
     async def _apply(interaction: discord.Interaction):
-        await interaction.response.send_message("📝 Apply to Team Pillbox: https://ems-management.preview.emergentagent.com/apply", ephemeral=True)
+        await interaction.response.send_message("📝 Apply to Team Pillbox: https://psgfamily.online/apply", ephemeral=True)
 
     @tree.command(name="roster", description="Show active EMS staff count")
     async def _roster(interaction: discord.Interaction):
@@ -177,7 +177,7 @@ async def _start_discord_bot(token: str):
                 else:
                     await send_discord_dm(a["discord_user_id"], embed={
                         "title": "❌ Application Update",
-                        "description": f"Your application `{a.get('ref_number')}` wasn't approved this round. Reapply in 14 days.",
+                        "description": f"Your application `{a.get('ref_number')}` wasn't approved this round. Reapply in 10 min.",
                         "color": 0xE63946})
             try:
                 await interaction.message.edit(
